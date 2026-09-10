@@ -1,0 +1,497 @@
+$green-900: #1b3a2b;
+$green-700: #2d5a3f;
+$green-600: #3a7350;
+$green-500: #4a8f63;
+$green-100: #e6f2ea;
+$earth-100: #f7f4ee;
+$earth-200: #ede7db;
+$amber-500: #c98a2c;
+$red-500: #b3261e;
+$red-100: #fdecea;
+$text-900: #1e231f;
+$text-600: #4f5a52;
+$white: #ffffff;
+$radius: 10px;
+$shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: $earth-100;
+  color: $text-900;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+// ---------- Navbar ----------
+.navbar {
+  background: $green-900;
+  color: $white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: 60px;
+  }
+
+  &__brand {
+    font-weight: 700;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__links {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    overflow-x: auto;
+  }
+
+  &__link {
+    padding: 8px 12px;
+    border-radius: $radius;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0.85;
+
+    &:hover,
+    &.active {
+      background: rgba(255, 255, 255, 0.12);
+      opacity: 1;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__cart {
+    position: relative;
+    padding: 8px 10px;
+    border-radius: $radius;
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+  }
+
+  &__cart-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: $amber-500;
+    color: $white;
+    font-size: 11px;
+    border-radius: 999px;
+    padding: 1px 5px;
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: $radius;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  background: $green-600;
+  color: $white;
+
+  &:hover {
+    background: $green-700;
+  }
+
+  &--outline {
+    background: transparent;
+    border-color: $green-600;
+    color: $green-700;
+
+    &:hover {
+      background: $green-100;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $text-600;
+    border-color: $earth-200;
+
+    &:hover {
+      background: $earth-200;
+    }
+  }
+
+  &--danger {
+    background: $red-500;
+    &:hover {
+      background: #8f1f19;
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.page {
+  padding: 28px 0 60px;
+}
+
+h1.page-title {
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+
+.page-subtitle {
+  color: $text-600;
+  margin: 0 0 24px;
+}
+
+// ---------- Cards / grid ----------
+.card {
+  background: $white;
+  border: 1px solid $earth-200;
+  border-radius: $radius;
+  box-shadow: $shadow;
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.product-card {
+  @extend .card;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $green-600;
+    font-weight: 700;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__meta {
+    font-size: 13px;
+    color: $text-600;
+  }
+
+  &__price {
+    font-size: 18px;
+    font-weight: 700;
+    color: $green-700;
+  }
+
+  &__footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+// ---------- Forms ----------
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 440px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-600;
+  }
+
+  input,
+  textarea,
+  select {
+    padding: 10px 12px;
+    border: 1px solid $earth-200;
+    border-radius: $radius;
+    font-size: 14px;
+    font-family: inherit;
+    background: $white;
+
+    &:focus {
+      outline: 2px solid $green-500;
+      outline-offset: 1px;
+    }
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+}
+
+.error-text {
+  color: $red-500;
+  font-size: 13px;
+}
+
+.alert {
+  padding: 12px 14px;
+  border-radius: $radius;
+  font-size: 14px;
+  margin-bottom: 16px;
+
+  &--error {
+    background: $red-100;
+    color: $red-500;
+    border: 1px solid rgba($red-500, 0.3);
+  }
+
+  &--success {
+    background: $green-100;
+    color: $green-700;
+    border: 1px solid rgba($green-600, 0.3);
+  }
+
+  &--warning {
+    background: #fff8e6;
+    color: #8a6100;
+    border: 1px solid rgba($amber-500, 0.4);
+  }
+}
+
+// ---------- Filters ----------
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+
+  input,
+  select {
+    padding: 9px 12px;
+    border: 1px solid $earth-200;
+    border-radius: $radius;
+    font-size: 14px;
+    background: $white;
+  }
+}
+
+.facet-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+
+  span {
+    background: $green-100;
+    color: $green-700;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+}
+
+// ---------- Post / feed ----------
+.post-card {
+  @extend .card;
+  padding: 16px;
+  margin-bottom: 14px;
+
+  &__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__author {
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  &__type {
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: $earth-200;
+    color: $text-600;
+  }
+
+  &__body {
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 10px;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    color: $text-600;
+
+    button {
+      background: none;
+      border: none;
+      font-size: 13px;
+      color: $text-600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 6px;
+      border-radius: 6px;
+
+      &:hover {
+        background: $earth-200;
+      }
+
+      &.liked {
+        color: $red-500;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__comments {
+    margin-top: 12px;
+    border-top: 1px solid $earth-200;
+    padding-top: 10px;
+  }
+}
+
+.comment {
+  font-size: 13px;
+  margin-bottom: 6px;
+
+  strong {
+    margin-right: 6px;
+  }
+}
+
+// ---------- Garden ----------
+.bed-card {
+  @extend .card;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.plant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $green-100;
+  color: $green-700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  margin: 0 8px 8px 0;
+
+  button {
+    background: none;
+    border: none;
+    color: $green-700;
+    font-weight: 700;
+  }
+}
+
+.recommend-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  margin-top: 12px;
+}
+
+.recommend-card {
+  @extend .card;
+  padding: 12px;
+  font-size: 13px;
+
+  strong {
+    display: block;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+}
+
+// ---------- Utility ----------
+.loading,
+.empty-state {
+  color: $text-600;
+  padding: 30px 0;
+  text-align: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: $earth-200;
+  color: $text-600;
+}
+
+.section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
