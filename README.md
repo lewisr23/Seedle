@@ -17,10 +17,10 @@ A social marketplace and planning tool for gardeners: buy and sell seeds, plants
 
 ## Stack
 
-- **Backend**: Laravel 13 / PHP 8.3 — REST API, Sanctum auth, backed enums, service classes for search/checkout/garden logic
-- **Frontend**: React + Vite, hand-written SCSS (no component library)
+- **Backend**: Laravel 13 / PHP 8.4 — REST API, Sanctum auth, backed enums, service classes for search/checkout/garden logic
+- **Frontend**: React + Vite, hand-written SCSS (no component library), Vitest + React Testing Library
 - **Data**: MySQL (SQLite for local dev/tests), Elasticsearch for product search, Redis + queue workers for async jobs
-- **Infra**: Docker Compose (7 services), GitHub Actions CI (PHPUnit + Pint + frontend build)
+- **Infra**: Docker Compose (7 services), GitHub Actions CI (PHPUnit + Pint, then frontend lint, tests and build)
 
 ## Architecture
 
@@ -89,16 +89,28 @@ php artisan queue:work
 docker compose up --build
 ```
 
-This brings up MySQL, Redis, Elasticsearch, the Laravel API (behind nginx on :8000), a dedicated queue worker, and the frontend dev server on :5173. Then, one-time setup inside the app container:
+This brings up MySQL (published on :3307, since a locally installed MySQL usually already owns :3306), Redis, Elasticsearch, the Laravel API (behind nginx on :8000), a dedicated queue worker, and the frontend dev server on :5173. Then, one-time setup inside the app container:
 
 ```bash
 docker compose exec app php artisan migrate --seed
 docker compose exec app php artisan products:reindex
 ```
 
-> The Docker setup hasn't been run end-to-end yet — worth a first pass with `docker compose logs -f` open before relying on it. The non-Docker path above has been, including checkout, the garden planner's conflict warnings, and the social feed, through a real browser session.
+`vendor/` and `node_modules/` live in anonymous volumes so the bind-mounted source doesn't hide them, which means a plain `--build` won't pick up dependency changes. After editing `composer.lock` or `package-lock.json`, renew those volumes (this leaves the MySQL and Elasticsearch data alone, unlike `down -v`):
+
+```bash
+docker compose up --build --force-recreate --renew-anon-volumes
+```
+
+> **Status**: run end to end on Docker Desktop (Windows/WSL2) — `docker compose up --build`, `migrate --seed`, `products:reindex`, then a real order placed through the API. Verified: PHP 8.4 with phpredis, cache/queue/session all on Redis, MySQL holding the seeded 3,000 products, Elasticsearch serving search with live facet counts (`source: elasticsearch`, not the fallback), and the async pipeline running every listener — `ReindexOrderedProducts`, `SendOrderConfirmation`, `NewSale`, `OrderStatusChanged` — with `CompleteOrderJob` moving the order from `processing` to `completed` and the notification landing for both buyer and seller.
+>
+> Thirteen defects were fixed to get there. Found by inspection: a missing `frontend/Dockerfile`; no phpredis in the image though compose puts queue, cache and session on Redis; the backend bind mount hiding the image's `vendor/`; a working copy's dev-only package manifest carried into the image; no `.env`/`APP_KEY` bootstrap on a fresh clone; and a PHP 8.3 base image that can't install a `composer.lock` pinning Symfony 8 (`php >=8.4.1`) — the same mismatch had been failing CI. Found only by running it: php-fpm can't reopen `/proc/self/fd/2` if the entrypoint drops privileges before exec (its master must stay root); `db:seed` calls `fake()`, which lives in the dev-only Faker, so the image needs an `INSTALL_DEV` build arg; the v9 Elasticsearch PHP client sends `compatible-with=9` headers that an 8.x server rejects; MySQL's published port collides with a local install; and nginx resolves `fastcgi_pass app:9000` once at startup, so a recreated app container turns into a 502 until it re-resolves through Docker's DNS. Two more surfaced in the test suite once a cluster was actually running: `phpunit.xml` never pinned `ELASTICSEARCH_HOST`, so the search tests were only taking their MySQL fallback because nothing happened to be listening on 9200 — start the stack and five of them fail; and running the suite inside the app container silently destroys the development database, which the Tests section explains how to avoid.
+>
+> The non-Docker path above has also been run end to end, including checkout, the garden planner's conflict warnings, and the social feed, through a real browser session.
 
 ### Tests
+
+#### Backend
 
 ```bash
 cd backend
@@ -106,6 +118,25 @@ php artisan test
 ```
 
 67 tests covering auth, checkout (including insufficient-stock and multi-seller-split cases), product search filters and sorting, reviews and the verified-buyer rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, and the notification pipeline.
+
+To run them inside the container instead, pass the test environment as real environment variables:
+
+```bash
+docker compose run --rm -e DB_CONNECTION=sqlite -e DB_DATABASE=:memory: -e QUEUE_CONNECTION=sync -e CACHE_STORE=array -e SESSION_DRIVER=array -e ELASTICSEARCH_HOST=http://127.0.0.1:1 app php artisan test
+```
+
+The `-e` flags are not optional. `phpunit.xml` can't override them: PHPUnit writes its `<env>` values to `putenv()` and `$_ENV` but never `$_SERVER`, and Laravel's config reads `$_SERVER` first, so docker-compose's `DB_CONNECTION=mysql` wins — `force="true"` included. `docker compose exec app php artisan test` therefore runs `RefreshDatabase` against the live development database and drops every seeded row.
+
+#### Frontend
+
+```bash
+cd frontend
+npm test
+```
+
+54 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, and the `Stars` component in both display and input modes.
+
+Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove" — so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 
 ## Not covered, and why
 

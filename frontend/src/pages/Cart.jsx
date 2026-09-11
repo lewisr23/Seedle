@@ -59,36 +59,12 @@ export default function Cart() {
 
       <div className="card" style={{ padding: 16 }}>
         {items.map((item) => (
-          <div
+          <CartLine
             key={item.product.id}
-            className="flex-between"
-            style={{ padding: '12px 0', borderBottom: '1px solid var(--sand-dark)' }}
-          >
-            <div>
-              <Link to={`/products/${item.product.id}`}>
-                <strong>{item.product.title}</strong>
-              </Link>
-              <div style={{ fontSize: 13, color: 'var(--ink-500)' }}>
-                £{item.product.price_pounds.toFixed(2)} each
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <input
-                type="number"
-                min={1}
-                max={item.product.stock}
-                value={item.quantity}
-                onChange={(e) => updateQuantity(item.product.id, Number(e.target.value))}
-                style={{ width: 60, padding: '7px 9px', borderRadius: 8, border: '1.5px solid var(--sand-dark)' }}
-              />
-              <span style={{ width: 70, textAlign: 'right' }}>
-                £{((item.product.price_pence * item.quantity) / 100).toFixed(2)}
-              </span>
-              <button className="btn btn--ghost" onClick={() => removeItem(item.product.id)}>
-                Remove
-              </button>
-            </div>
-          </div>
+            item={item}
+            updateQuantity={updateQuantity}
+            removeItem={removeItem}
+          />
         ))}
 
         <div className="flex-between" style={{ marginTop: 16 }}>
@@ -103,6 +79,56 @@ export default function Cart() {
             </button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * One cart row. The quantity field keeps its own draft string so it can be
+ * empty while the user retypes a number: committing "" straight to the cart
+ * would read as Number('') === 0, which updateQuantity treats as "remove",
+ * and the line would vanish mid-edit. Deleting a line is what Remove is for.
+ */
+function CartLine({ item, updateQuantity, removeItem }) {
+  // null means "show the committed quantity"; a string means the user is
+  // part-way through typing one.
+  const [draft, setDraft] = useState(null);
+  const shown = draft ?? String(item.quantity);
+
+  return (
+    <div
+      className="flex-between"
+      style={{ padding: '12px 0', borderBottom: '1px solid var(--sand-dark)' }}
+    >
+      <div>
+        <Link to={`/products/${item.product.id}`}>
+          <strong>{item.product.title}</strong>
+        </Link>
+        <div style={{ fontSize: 13, color: 'var(--ink-500)' }}>
+          £{item.product.price_pounds.toFixed(2)} each
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <input
+          type="number"
+          min={1}
+          max={item.product.stock}
+          value={shown}
+          onChange={(e) => {
+            const raw = e.target.value;
+            setDraft(raw);
+            if (raw !== '') updateQuantity(item.product.id, Number(raw));
+          }}
+          onBlur={() => setDraft(null)}
+          style={{ width: 60, padding: '7px 9px', borderRadius: 8, border: '1.5px solid var(--sand-dark)' }}
+        />
+        <span style={{ width: 70, textAlign: 'right' }}>
+          £{((item.product.price_pence * item.quantity) / 100).toFixed(2)}
+        </span>
+        <button className="btn btn--ghost" onClick={() => removeItem(item.product.id)}>
+          Remove
+        </button>
       </div>
     </div>
   );

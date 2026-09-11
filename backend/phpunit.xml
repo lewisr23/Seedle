@@ -28,6 +28,19 @@
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <!-- Port 1 is never bound, so the search service always takes its
+             MySQL fallback path. Without this the suite quietly depends on
+             nothing listening on 9200: start the Docker stack and the search
+             tests would query the container's real index instead of their own
+             fixtures, and fail.
+
+             Note this only binds when the variable isn't already set in the
+             real environment. Inside the app container docker-compose sets it
+             (and DB_CONNECTION, QUEUE_CONNECTION...) for real, and a real env
+             var reaches Laravel through $_SERVER, which PHPUnit never writes —
+             so these values lose, force="true" included. See the README for
+             the invocation that runs the suite inside a container safely. -->
+        <env name="ELASTICSEARCH_HOST" value="http://127.0.0.1:1"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>

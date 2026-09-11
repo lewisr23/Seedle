@@ -1,3 +1,29 @@
+# Shared by the two containers that boot the Laravel app. Keeping it in one
+# place stops the web tier and the worker drifting onto different databases.
+x-backend-env: &backend-env
+  APP_URL: http://localhost:8000
+  FRONTEND_URL: http://localhost:5173
+  DB_CONNECTION: mysql
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_DATABASE: growguide
+  DB_USERNAME: growguide
+  DB_PASSWORD: growguide
+  REDIS_HOST: redis
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
+  ELASTICSEARCH_HOST: http://elasticsearch:9200
+
+# The bind mount gives live code reload, but it also hides everything the image
+# built into those two directories. Anonymous volumes keep the image's copies
+# visible, and keep the container's --no-dev vendor from overwriting the host's
+# dev install (which `php artisan test` on the host still needs).
+x-backend-volumes: &backend-volumes
+  - ./backend:/var/www/html
+  - /var/www/html/vendor
+  - /var/www/html/bootstrap/cache
+
 services:
   mysql:
     image: mysql:8.0
@@ -8,7 +34,10 @@ services:
       MYSQL_PASSWORD: growguide
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      # 3307 on the host: a native Windows mysqld already owns 3306. Nothing
+      # inside the network cares — the app reaches this on mysql:3306 either
+      # way — so this port only matters for connecting a GUI client.
+      - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -22,9 +51,14 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.0
     restart: unless-stopped
     environment:
       discovery.type: single-node
@@ -41,55 +75,37 @@ services:
       retries: 10
 
   app:
-    build: ./backend
+    build: &backend-build
+      context: ./backend
+      args:
+        INSTALL_DEV: "true"
     restart: unless-stopped
-    volumes:
-      - ./backend:/var/www/html
-    environment:
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: growguide
-      DB_USERNAME: growguide
-      DB_PASSWORD: growguide
-      REDIS_HOST: redis
-      QUEUE_CONNECTION: redis
-      CACHE_STORE: redis
-      SESSION_DRIVER: redis
-      ELASTICSEARCH_HOST: http://elasticsearch:9200
+    volumes: *backend-volumes
+    environment: *backend-env
     depends_on:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       elasticsearch:
         condition: service_healthy
 
   # A dedicated worker container is what makes fulfilment async in practice —
   # scale this independently of the web tier with `docker compose up -d --scale queue-worker=3`.
   queue-worker:
-    build: ./backend
+    build: *backend-build
     restart: unless-stopped
     command: php artisan queue:work --sleep=1 --tries=3
-    volumes:
-      - ./backend:/var/www/html
-    environment:
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: growguide
-      DB_USERNAME: growguide
-      DB_PASSWORD: growguide
-      REDIS_HOST: redis
-      QUEUE_CONNECTION: redis
-      CACHE_STORE: redis
-      SESSION_DRIVER: redis
-      ELASTICSEARCH_HOST: http://elasticsearch:9200
+    volumes: *backend-volumes
+    environment: *backend-env
     depends_on:
       mysql:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      # ReindexOrderedProducts runs on this container, so it needs the cluster too.
+      elasticsearch:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine
@@ -112,7 +128,8 @@ services:
       - /app/node_modules
     environment:
       VITE_API_URL: http://localhost:8000/api
-    command: npm run dev -- --host 0.0.0.0
+      # Switches Vite's watcher to polling — see vite.config.js.
+      DOCKER: "true"
 
 volumes:
   mysql-data:
