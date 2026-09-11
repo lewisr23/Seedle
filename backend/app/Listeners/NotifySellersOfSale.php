@@ -3,21 +3,24 @@
 namespace App\Listeners;
 
 use App\Events\OrderPlaced;
+use App\Models\User;
+use App\Notifications\NewSale;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
 
 class NotifySellersOfSale implements ShouldQueue
 {
     public function handle(OrderPlaced $event): void
     {
-        $itemsBySeller = $event->order->items->groupBy('seller_id');
+        $event->order->loadMissing('items.product');
 
-        foreach ($itemsBySeller as $sellerId => $items) {
-            Log::info('Seller notified of new sale', [
-                'order_id' => $event->order->id,
-                'seller_id' => $sellerId,
-                'items' => $items->count(),
-            ]);
+        foreach ($event->order->items->groupBy('seller_id') as $sellerId => $items) {
+            $seller = User::find($sellerId);
+
+            if (! $seller) {
+                continue;
+            }
+
+            $seller->notify(new NewSale($event->order, $items));
         }
     }
 }

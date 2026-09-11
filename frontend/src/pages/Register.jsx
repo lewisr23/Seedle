@@ -44,12 +44,14 @@ export default function Register() {
 
   return (
     <div className="page container">
-      <h1 className="page-title">Create your account</h1>
-      <p className="page-subtitle">Join a community of gardeners buying, selling and helping each other grow.</p>
+      <div className="auth-shell">
+        <span className="eyebrow">Join in</span>
+        <h1 className="page-title">Create your account</h1>
+        <p className="page-subtitle">A community of gardeners buying, selling and helping each other grow.</p>
 
-      {error && <div className="alert alert--error">{error}</div>}
+        {error && <div className="alert alert--error">{error}</div>}
 
-      <form className="form" onSubmit={submit}>
+        <form className="form" onSubmit={submit} style={{ maxWidth: 'none' }}>
         <div className="field">
           <label>Name</label>
           <input value={form.name} onChange={update('name')} required />
@@ -94,14 +96,15 @@ export default function Register() {
           <label>Location (optional)</label>
           <input value={form.location} onChange={update('location')} placeholder="e.g. York, UK" />
         </div>
-        <button className="btn" type="submit" disabled={busy}>
+        <button className="btn btn--block" type="submit" disabled={busy}>
           {busy ? 'Creating account...' : 'Sign up'}
         </button>
       </form>
 
-      <p style={{ marginTop: 16, fontSize: 14 }}>
-        Already have an account? <Link to="/login">Log in</Link>
-      </p>
+        <p style={{ marginTop: 18, fontSize: 14 }}>
+          Already have an account? <Link to="/login">Log in</Link>
+        </p>
+      </div>
     </div>
   );
 }

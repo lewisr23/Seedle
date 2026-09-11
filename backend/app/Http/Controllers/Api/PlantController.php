@@ -19,11 +19,29 @@ class PlantController extends Controller
             $query->where('type', $request->string('type'));
         }
 
+        if ($request->filled('sun_requirement')) {
+            $query->where('sun_requirement', $request->string('sun_requirement'));
+        }
+
+        if ($request->filled('water_needs')) {
+            $query->where('water_needs', $request->string('water_needs'));
+        }
+
+        // A plant "suits" a zone when that zone falls inside its hardiness range.
+        if ($request->filled('zone')) {
+            $zone = (int) $request->integer('zone');
+            $query->where('min_zone', '<=', $zone)->where('max_zone', '>=', $zone);
+        }
+
+        if ($request->filled('month')) {
+            $query->whereJsonContains('planting_months', (int) $request->integer('month'));
+        }
+
         if ($request->filled('q')) {
             $query->where('name', 'like', '%'.$request->string('q').'%');
         }
 
-        return PlantResource::collection($query->orderBy('name')->paginate(50));
+        return PlantResource::collection($query->orderBy('name')->paginate(60));
     }
 
     public function show(Plant $plant): PlantResource

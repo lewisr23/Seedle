@@ -62,13 +62,13 @@ export default function Cart() {
           <div
             key={item.product.id}
             className="flex-between"
-            style={{ padding: '10px 0', borderBottom: '1px solid #ede7db' }}
+            style={{ padding: '12px 0', borderBottom: '1px solid var(--sand-dark)' }}
           >
             <div>
               <Link to={`/products/${item.product.id}`}>
                 <strong>{item.product.title}</strong>
               </Link>
-              <div style={{ fontSize: 13, color: '#4f5a52' }}>
+              <div style={{ fontSize: 13, color: 'var(--ink-500)' }}>
                 £{item.product.price_pounds.toFixed(2)} each
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function Cart() {
                 max={item.product.stock}
                 value={item.quantity}
                 onChange={(e) => updateQuantity(item.product.id, Number(e.target.value))}
-                style={{ width: 60, padding: '6px 8px', borderRadius: 8, border: '1px solid #ede7db' }}
+                style={{ width: 60, padding: '7px 9px', borderRadius: 8, border: '1.5px solid var(--sand-dark)' }}
               />
               <span style={{ width: 70, textAlign: 'right' }}>
                 £{((item.product.price_pence * item.quantity) / 100).toFixed(2)}

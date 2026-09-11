@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "lewisr23/growguide",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "GrowGuide API — a social marketplace and planning tool for gardeners.",
+    "keywords": ["laravel", "growguide"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

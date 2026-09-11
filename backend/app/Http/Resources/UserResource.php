@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'avatar_path' => $this->avatar_path,
             'followers_count' => $this->whenCounted('followers'),
             'following_count' => $this->whenCounted('following'),
+            'products_count' => $this->whenCounted('products'),
             'is_following' => $this->when(
                 $request->user() && $request->user()->isNot($this->resource),
                 fn () => $request->user()->isFollowing($this->resource)

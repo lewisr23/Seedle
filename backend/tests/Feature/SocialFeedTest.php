@@ -80,4 +80,46 @@ class SocialFeedTest extends TestCase
         $response->assertCreated();
         $this->assertDatabaseHas('comments', ['post_id' => $post->id, 'user_id' => $user->id]);
     }
+
+    public function test_a_user_can_pin_their_own_post_to_their_profile(): void
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->for($user)->create();
+
+        $this->actingAs($user, 'sanctum')->postJson("/api/posts/{$post->id}/pin")->assertOk();
+        $this->assertDatabaseHas('posts', ['id' => $post->id]);
+        $this->assertNotNull($post->fresh()->pinned_at);
+
+        $this->actingAs($user, 'sanctum')->deleteJson("/api/posts/{$post->id}/pin")->assertOk();
+        $this->assertNull($post->fresh()->pinned_at);
+    }
+
+    public function test_a_user_cannot_pin_someone_elses_post(): void
+    {
+        $owner = User::factory()->create();
+        $intruder = User::factory()->create();
+        $post = Post::factory()->for($owner)->create();
+
+        $response = $this->actingAs($intruder, 'sanctum')->postJson("/api/posts/{$post->id}/pin");
+
+        $response->assertForbidden();
+        $this->assertNull($post->fresh()->pinned_at);
+    }
+
+    public function test_pinned_posts_appear_first_on_a_users_profile(): void
+    {
+        $user = User::factory()->create();
+        $older = Post::factory()->for($user)->create(['created_at' => now()->subDays(5)]);
+        $newer = Post::factory()->for($user)->create(['created_at' => now()->subDay()]);
+
+        $older->update(['pinned_at' => now()]);
+
+        $response = $this->getJson("/api/users/{$user->username}/posts");
+
+        $response->assertOk();
+        $ids = collect($response->json('data'))->pluck('id');
+
+        $this->assertEquals($older->id, $ids->first());
+        $this->assertEquals($newer->id, $ids->get(1));
+    }
 }

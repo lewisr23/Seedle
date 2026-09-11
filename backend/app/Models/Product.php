@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'seller_id', 'plant_id', 'title', 'slug', 'description', 'category',
@@ -39,9 +40,25 @@ class Product extends Model
         return $this->belongsTo(Plant::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
     public function priceInPounds(): float
     {
         return round($this->price_pence / 100, 2);
+    }
+
+    /**
+     * Reviews are limited to people who actually bought the product, so a
+     * rating can't be left by someone who never received the thing.
+     */
+    public function wasPurchasedBy(User $user): bool
+    {
+        return OrderItem::where('product_id', $this->id)
+            ->whereHas('order', fn ($q) => $q->where('buyer_id', $user->id))
+            ->exists();
     }
 
     /**
@@ -52,6 +69,8 @@ class Product extends Model
         $this->loadMissing('plant', 'seller');
 
         return [
+            'rating_average' => $this->reviews()->avg('rating'),
+            'reviews_count' => $this->reviews()->count(),
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,

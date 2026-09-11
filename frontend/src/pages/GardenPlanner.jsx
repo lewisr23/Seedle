@@ -31,12 +31,13 @@ export default function GardenPlanner() {
 
   return (
     <div className="page container">
+      <span className="eyebrow">Plan</span>
       <h1 className="page-title">Garden Planner</h1>
       <p className="page-subtitle">
         Lay out your beds, add what's growing, and we'll flag plants that don't get along.
       </p>
 
-      <div className="card section" style={{ padding: 16 }}>
+      <div className="card section" style={{ padding: 18 }}>
         {error && <div className="alert alert--error">{error}</div>}
         <form onSubmit={createBed} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <input
@@ -44,14 +45,14 @@ export default function GardenPlanner() {
             placeholder="Bed name, e.g. Back Yard Bed"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            style={{ flex: 1, minWidth: 200, padding: '9px 12px', borderRadius: 10, border: '1px solid #ede7db' }}
+            style={{ flex: 1, minWidth: 200, padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--sand-dark)' }}
           />
           <input
             type="number"
             placeholder="Zone"
             value={zone}
             onChange={(e) => setZone(e.target.value)}
-            style={{ width: 90, padding: '9px 12px', borderRadius: 10, border: '1px solid #ede7db' }}
+            style={{ width: 90, padding: '9px 12px', borderRadius: 10, border: '1.5px solid var(--sand-dark)' }}
           />
           <button className="btn" type="submit">
             Add bed
@@ -60,7 +61,12 @@ export default function GardenPlanner() {
       </div>
 
       {beds === null && <div className="loading">Loading your beds...</div>}
-      {beds?.length === 0 && <div className="empty-state">No garden beds yet — add one above to get started.</div>}
+      {beds?.length === 0 && (
+        <div className="empty-state">
+          <span className="empty-state__icon">🪴</span>
+          No garden beds yet — add one above to get started.
+        </div>
+      )}
 
       {beds?.map((bed) => (
         <div className="bed-card" key={bed.id}>
@@ -74,7 +80,7 @@ export default function GardenPlanner() {
             </Link>
           </div>
           <div style={{ marginTop: 10 }}>
-            {bed.plants?.length === 0 && <span style={{ fontSize: 13, color: '#4f5a52' }}>Nothing planted yet.</span>}
+            {bed.plants?.length === 0 && <span style={{ fontSize: 13, color: 'var(--ink-500)' }}>Nothing planted yet.</span>}
             {bed.plants?.map((entry) => (
               <span className="plant-chip" key={entry.entry_id}>
                 {entry.plant.name}

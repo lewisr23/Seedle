@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 
 export default function GardenBedDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [bed, setBed] = useState(null);
   const [plants, setPlants] = useState([]);
   const [selectedPlant, setSelectedPlant] = useState('');
   const [warnings, setWarnings] = useState([]);
   const [error, setError] = useState('');
   const [recommendations, setRecommendations] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [zoneDraft, setZoneDraft] = useState('');
 
   const load = () => api(`/garden-beds/${id}`).then((res) => setBed(res.data));
 
@@ -46,6 +50,33 @@ export default function GardenBedDetail() {
     load();
   };
 
+  const startEditing = () => {
+    setNameDraft(bed.name);
+    setZoneDraft(bed.hardiness_zone || '');
+    setEditing(true);
+  };
+
+  const saveBed = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      await api(`/garden-beds/${id}`, {
+        method: 'PUT',
+        body: { name: nameDraft, hardiness_zone: zoneDraft || null },
+      });
+      setEditing(false);
+      load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not save changes.');
+    }
+  };
+
+  const deleteBed = async () => {
+    if (!window.confirm(`Delete "${bed.name}" and everything planted in it?`)) return;
+    await api(`/garden-beds/${id}`, { method: 'DELETE' });
+    navigate('/garden');
+  };
+
   if (!bed) return <div className="page container loading">Loading...</div>;
 
   return (
@@ -53,10 +84,49 @@ export default function GardenBedDetail() {
       <Link to="/garden" style={{ fontSize: 13 }}>
         ← Back to Garden Planner
       </Link>
-      <h1 className="page-title" style={{ marginTop: 8 }}>
-        {bed.name}
-      </h1>
-      {bed.hardiness_zone && <p className="page-subtitle">Zone {bed.hardiness_zone}</p>}
+
+      {editing ? (
+        <form className="card" onSubmit={saveBed} style={{ padding: 18, marginTop: 12, maxWidth: 520 }}>
+          <div className="field" style={{ marginBottom: 12 }}>
+            <label>Bed name</label>
+            <input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} required />
+          </div>
+          <div className="field" style={{ marginBottom: 14 }}>
+            <label>Hardiness zone</label>
+            <input
+              type="number"
+              value={zoneDraft}
+              onChange={(e) => setZoneDraft(e.target.value)}
+              placeholder="e.g. 8"
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn--sm" type="submit">
+              Save
+            </button>
+            <button className="btn btn--ghost btn--sm" type="button" onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex-between" style={{ marginTop: 8, gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <h1 className="page-title" style={{ marginBottom: 2 }}>
+              {bed.name}
+            </h1>
+            {bed.hardiness_zone && <p className="page-subtitle" style={{ marginBottom: 0 }}>Zone {bed.hardiness_zone}</p>}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn--outline btn--sm" onClick={startEditing}>
+              Rename
+            </button>
+            <button className="btn btn--ghost btn--sm" onClick={deleteBed}>
+              Delete bed
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="section">
         <h2 className="section-title">What's planted</h2>

@@ -59,6 +59,34 @@ class GardenBedTest extends TestCase
         $this->assertEquals('Tomato', $warnings[0]['plant']['name']);
     }
 
+    public function test_a_user_can_rename_their_garden_bed(): void
+    {
+        $user = User::factory()->create();
+        $bed = GardenBed::factory()->for($user)->create(['name' => 'Old Name', 'hardiness_zone' => '5']);
+
+        $response = $this->actingAs($user, 'sanctum')->putJson("/api/garden-beds/{$bed->id}", [
+            'name' => 'Greenhouse Bed',
+            'hardiness_zone' => '9',
+        ]);
+
+        $response->assertOk()->assertJsonPath('data.name', 'Greenhouse Bed');
+        $this->assertDatabaseHas('garden_beds', ['id' => $bed->id, 'name' => 'Greenhouse Bed', 'hardiness_zone' => '9']);
+    }
+
+    public function test_a_user_cannot_rename_another_users_garden_bed(): void
+    {
+        $owner = User::factory()->create();
+        $intruder = User::factory()->create();
+        $bed = GardenBed::factory()->for($owner)->create(['name' => 'Owner Bed']);
+
+        $response = $this->actingAs($intruder, 'sanctum')->putJson("/api/garden-beds/{$bed->id}", [
+            'name' => 'Hijacked',
+        ]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('garden_beds', ['id' => $bed->id, 'name' => 'Owner Bed']);
+    }
+
     public function test_a_user_cannot_view_another_users_garden_bed(): void
     {
         $owner = User::factory()->create();

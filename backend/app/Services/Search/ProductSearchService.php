@@ -25,7 +25,7 @@ class ProductSearchService
     }
 
     /**
-     * @param  array{q?: string, category?: string, sun_requirement?: string, zone?: int, min_price?: int, max_price?: int, seller_id?: int}  $filters
+     * @param  array{q?: string, category?: string, sun_requirement?: string, zone?: int, min_price?: int, max_price?: int, seller_id?: int, plant_id?: int, in_stock?: bool, sort?: string}  $filters
      */
     public function search(array $filters, int $page = 1, int $perPage = 20): array
     {
@@ -72,6 +72,10 @@ class ProductSearchService
             $filter[] = ['term' => ['seller_id' => (int) $filters['seller_id']]];
         }
 
+        if (! empty($filters['plant_id'])) {
+            $filter[] = ['term' => ['plant_id' => (int) $filters['plant_id']]];
+        }
+
         if (! empty($filters['min_price']) || ! empty($filters['max_price'])) {
             $range = [];
             if (! empty($filters['min_price'])) {
@@ -81,6 +85,10 @@ class ProductSearchService
                 $range['lte'] = (int) $filters['max_price'];
             }
             $filter[] = ['range' => ['price_pence' => $range]];
+        }
+
+        if (! empty($filters['in_stock'])) {
+            $filter[] = ['range' => ['stock' => ['gt' => 0]]];
         }
 
         $query = empty($must) && empty($filter)
@@ -93,7 +101,7 @@ class ProductSearchService
                 'query' => $query,
                 'from' => ($page - 1) * $perPage,
                 'size' => $perPage,
-                'sort' => empty($filters['q']) ? [['created_at' => 'desc']] : ['_score'],
+                'sort' => $this->esSortClause($filters),
                 'aggs' => [
                     'categories' => ['terms' => ['field' => 'category', 'size' => 10]],
                     'sun_requirements' => ['terms' => ['field' => 'sun_requirement', 'size' => 10]],
@@ -106,6 +114,8 @@ class ProductSearchService
         // Re-fetch from MySQL to guarantee fresh, fully-related data rather than
         // trusting the (possibly stale) denormalised copy stored in the index.
         $products = Product::with(['seller', 'plant'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->whereIn('id', $ids)
             ->get()
             ->sortBy(fn ($p) => array_search($p->id, $ids))
@@ -129,9 +139,23 @@ class ProductSearchService
         return collect($buckets)->mapWithKeys(fn ($b) => [$b['key'] => $b['doc_count']])->all();
     }
 
+    private function esSortClause(array $filters): array
+    {
+        return match ($filters['sort'] ?? null) {
+            'price_asc' => [['price_pence' => 'asc']],
+            'price_desc' => [['price_pence' => 'desc']],
+            'rating_desc' => [['rating_average' => ['order' => 'desc', 'missing' => '_last']]],
+            default => empty($filters['q']) ? [['created_at' => 'desc']] : ['_score'],
+        };
+    }
+
     private function searchDatabase(array $filters, int $page, int $perPage): array
     {
-        $query = Product::query()->with(['seller', 'plant'])->where('is_active', true);
+        $query = Product::query()
+            ->with(['seller', 'plant'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->where('is_active', true);
 
         if (! empty($filters['q'])) {
             $term = '%'.$filters['q'].'%';
@@ -146,12 +170,20 @@ class ProductSearchService
             $query->where('seller_id', $filters['seller_id']);
         }
 
+        if (! empty($filters['plant_id'])) {
+            $query->where('plant_id', $filters['plant_id']);
+        }
+
         if (! empty($filters['min_price'])) {
             $query->where('price_pence', '>=', (int) $filters['min_price']);
         }
 
         if (! empty($filters['max_price'])) {
             $query->where('price_pence', '<=', (int) $filters['max_price']);
+        }
+
+        if (! empty($filters['in_stock'])) {
+            $query->where('stock', '>', 0);
         }
 
         if (! empty($filters['sun_requirement']) || ! empty($filters['zone'])) {
@@ -168,9 +200,14 @@ class ProductSearchService
 
         $total = (clone $query)->count();
 
-        $results = $query->orderByDesc('created_at')
-            ->forPage($page, $perPage)
-            ->get();
+        match ($filters['sort'] ?? null) {
+            'price_asc' => $query->orderBy('price_pence'),
+            'price_desc' => $query->orderByDesc('price_pence'),
+            'rating_desc' => $query->orderByDesc('reviews_avg_rating'),
+            default => $query->orderByDesc('created_at'),
+        };
+
+        $results = $query->forPage($page, $perPage)->get();
 
         return [
             'source' => 'database',
@@ -205,6 +242,8 @@ class ProductSearchService
                         'max_zone' => ['type' => 'integer'],
                         'price_pence' => ['type' => 'integer'],
                         'stock' => ['type' => 'integer'],
+                        'rating_average' => ['type' => 'float'],
+                        'reviews_count' => ['type' => 'integer'],
                         'is_active' => ['type' => 'boolean'],
                         'seller_id' => ['type' => 'integer'],
                         'created_at' => ['type' => 'date'],

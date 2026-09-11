@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCommentRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Post;
+use App\Notifications\NewComment;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CommentController extends Controller
@@ -23,6 +24,11 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
             'body' => $request->validated()['body'],
         ]);
+
+        // No point telling someone they commented on their own post.
+        if ($post->user_id !== $request->user()->id) {
+            $post->user->notify(new NewComment($comment->load('user')));
+        }
 
         return new CommentResource($comment->load('user'));
     }

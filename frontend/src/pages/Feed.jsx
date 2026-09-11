@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, ApiError } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import PostCard from '../components/PostCard';
+import SuggestedGardeners from '../components/SuggestedGardeners';
 
 const TYPES = [
   { value: 'update', label: 'Update' },
@@ -40,18 +41,19 @@ export default function Feed() {
 
   return (
     <div className="page container">
-      <h1 className="page-title">Community</h1>
+      <span className="eyebrow">Community</span>
+      <h1 className="page-title">What's growing?</h1>
       <p className="page-subtitle">Updates, questions and tips from fellow gardeners.</p>
 
       {user && (
-        <div className="card section" style={{ padding: 16 }}>
+        <div className="card section" style={{ padding: 18 }}>
           {error && <div className="alert alert--error">{error}</div>}
           <form onSubmit={submitPost}>
             <textarea
               placeholder="Share an update, ask a question, or post a tip..."
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid #ede7db' }}
+              style={{ width: '100%', padding: 12, borderRadius: 12, border: '1.5px solid var(--sand-dark)', fontFamily: 'inherit', fontSize: 14.5 }}
             />
             <div className="flex-between" style={{ marginTop: 10 }}>
               <select value={type} onChange={(e) => setType(e.target.value)}>
@@ -70,24 +72,41 @@ export default function Feed() {
       )}
 
       {user && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
           <button
-            className={`btn ${tab === 'following' ? '' : 'btn--outline'}`}
+            className={`category-pill${tab === 'following' ? ' active' : ''}`}
             onClick={() => setTab('following')}
           >
             Following
           </button>
-          <button className={`btn ${tab === 'explore' ? '' : 'btn--outline'}`} onClick={() => setTab('explore')}>
+          <button className={`category-pill${tab === 'explore' ? ' active' : ''}`} onClick={() => setTab('explore')}>
             Explore
           </button>
         </div>
       )}
 
-      {posts === null && <div className="loading">Loading posts...</div>}
-      {posts?.length === 0 && <div className="empty-state">Nothing here yet.</div>}
-      {posts?.map((post) => (
-        <PostCard key={post.id} post={post} />
-      ))}
+      <div className="feed-layout">
+        <div>
+          {posts === null && <div className="loading">Loading posts...</div>}
+          {posts?.length === 0 && (
+            <div className="empty-state">
+              <span className="empty-state__icon">🌾</span>
+              {tab === 'following'
+                ? "Nothing here yet — follow a few gardeners and their posts will show up."
+                : 'Nothing here yet.'}
+            </div>
+          )}
+          {posts?.map((post) => (
+            <PostCard key={post.id} post={post} onChange={load} />
+          ))}
+        </div>
+
+        {user && (
+          <aside className="feed-sidebar">
+            <SuggestedGardeners />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

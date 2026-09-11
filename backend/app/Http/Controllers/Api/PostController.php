@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -51,6 +52,21 @@ class PostController extends Controller
         return PostResource::collection($posts);
     }
 
+    /**
+     * A single user's posts, pinned post(s) first — used on profile pages.
+     */
+    public function forUser(User $user): AnonymousResourceCollection
+    {
+        $posts = $this->baseQuery()
+            ->where('user_id', $user->id)
+            ->orderByRaw('pinned_at is null')
+            ->orderByDesc('pinned_at')
+            ->latest()
+            ->paginate(20);
+
+        return PostResource::collection($posts);
+    }
+
     public function show(Post $post): PostResource
     {
         return new PostResource(
@@ -86,5 +102,23 @@ class PostController extends Controller
         $post->likes()->where('user_id', $request->user()->id)->delete();
 
         return response()->json(['message' => 'Unliked.']);
+    }
+
+    public function pin(Request $request, Post $post): JsonResponse
+    {
+        $this->authorize('update', $post);
+
+        $post->update(['pinned_at' => now()]);
+
+        return response()->json(['message' => 'Pinned to your profile.']);
+    }
+
+    public function unpin(Request $request, Post $post): JsonResponse
+    {
+        $this->authorize('update', $post);
+
+        $post->update(['pinned_at' => null]);
+
+        return response()->json(['message' => 'Unpinned.']);
     }
 }

@@ -18,6 +18,7 @@ class PostResource extends JsonResource
             'image_path' => $this->image_path,
             'user' => new UserResource($this->whenLoaded('user')),
             'plant' => new PlantResource($this->whenLoaded('plant')),
+            'pinned' => $this->pinned_at !== null,
             'likes_count' => $this->whenCounted('likes'),
             'comments_count' => $this->whenCounted('comments'),
             'liked_by_me' => $this->when(

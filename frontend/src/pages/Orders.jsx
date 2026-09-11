@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 
 const STATUS_COLORS = {
-  pending: '#8a6100',
-  processing: '#c98a2c',
-  completed: '#2d5a3f',
-  cancelled: '#b3261e',
+  pending: 'var(--amber-600)',
+  processing: 'var(--terracotta-600)',
+  completed: 'var(--green-700)',
+  cancelled: 'var(--red-500)',
 };
 
 export default function Orders() {
@@ -27,17 +27,22 @@ export default function Orders() {
     <div className="page container">
       <h1 className="page-title">Your orders</h1>
 
-      {orders.length === 0 && <div className="empty-state">No orders yet.</div>}
+      {orders.length === 0 && (
+        <div className="empty-state">
+          <span className="empty-state__icon">📦</span>
+          No orders yet.
+        </div>
+      )}
 
       {orders.map((order) => (
-        <div className="card" key={order.id} style={{ padding: 16, marginBottom: 12 }}>
+        <div className="card" key={order.id} style={{ padding: 18, marginBottom: 14 }}>
           <div className="flex-between">
             <strong>Order #{order.id}</strong>
-            <span style={{ color: STATUS_COLORS[order.status], fontWeight: 600, textTransform: 'capitalize' }}>
-              {order.status}
+            <span style={{ color: STATUS_COLORS[order.status], fontWeight: 700, textTransform: 'capitalize', fontSize: 13.5 }}>
+              ● {order.status}
             </span>
           </div>
-          <p style={{ fontSize: 13, color: '#4f5a52', margin: '4px 0 10px' }}>
+          <p style={{ fontSize: 13, color: 'var(--ink-500)', margin: '4px 0 10px' }}>
             {new Date(order.created_at).toLocaleString()} · £{order.total_pounds.toFixed(2)}
           </p>
           {order.items?.map((item) => (

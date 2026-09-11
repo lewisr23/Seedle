@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Notifications\OrderStatusChanged;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -34,5 +35,8 @@ class CompleteOrderJob implements ShouldQueue
         }
 
         $order->update(['status' => OrderStatus::Completed]);
+
+        $order->loadMissing('buyer');
+        $order->buyer?->notify(new OrderStatusChanged($order));
     }
 }

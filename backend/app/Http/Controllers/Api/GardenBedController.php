@@ -37,6 +37,15 @@ class GardenBedController extends Controller
         return new GardenBedResource($gardenBed->load('entries.plant'));
     }
 
+    public function update(StoreGardenBedRequest $request, GardenBed $gardenBed): GardenBedResource
+    {
+        $this->authorize('update', $gardenBed);
+
+        $gardenBed->update($request->validated());
+
+        return new GardenBedResource($gardenBed->load('entries.plant'));
+    }
+
     public function destroy(Request $request, GardenBed $gardenBed): JsonResponse
     {
         $this->authorize('delete', $gardenBed);

@@ -10,14 +10,18 @@ use App\Models\Product;
 use App\Services\Search\ProductSearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
     public function index(Request $request, ProductSearchService $search): JsonResponse
     {
+        $filters = $request->only(['q', 'category', 'sun_requirement', 'zone', 'min_price', 'max_price', 'seller_id', 'plant_id', 'sort']);
+        $filters['in_stock'] = $request->boolean('in_stock');
+
         $result = $search->search(
-            filters: $request->only(['q', 'category', 'sun_requirement', 'zone', 'min_price', 'max_price', 'seller_id']),
+            filters: $filters,
             page: (int) $request->integer('page', 1),
             perPage: min((int) $request->integer('per_page', 20), 50),
         );
@@ -32,9 +36,25 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * The current user's own listings — unlike the public search this includes
+     * deactivated and out-of-stock ones, since a seller still needs to manage them.
+     */
+    public function mine(Request $request): AnonymousResourceCollection
+    {
+        $products = $request->user()->products()
+            ->with('plant')
+            ->latest()
+            ->paginate(30);
+
+        return ProductResource::collection($products);
+    }
+
     public function show(Product $product): ProductResource
     {
-        return new ProductResource($product->load('seller', 'plant'));
+        $product->load('seller', 'plant')->loadAvg('reviews', 'rating')->loadCount('reviews');
+
+        return new ProductResource($product);
     }
 
     public function store(StoreProductRequest $request): ProductResource

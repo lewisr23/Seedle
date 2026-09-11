@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'plant_id', 'type', 'body', 'image_path'])]
+#[Fillable(['user_id', 'plant_id', 'type', 'body', 'image_path', 'pinned_at'])]
 class Post extends Model
 {
     /** @use HasFactory<PostFactory> */
@@ -20,6 +20,7 @@ class Post extends Model
     {
         return [
             'type' => PostType::class,
+            'pinned_at' => 'datetime',
         ];
     }
 

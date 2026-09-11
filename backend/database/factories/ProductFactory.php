@@ -35,7 +35,10 @@ class ProductFactory extends Factory
         };
 
         return [
-            'seller_id' => User::inRandomOrder()->first()?->id ?? User::factory(),
+            // Always a fresh seller unless one is passed in — picking a random
+            // existing user makes tests order-dependent (the buyer can end up
+            // owning the product they're trying to act on).
+            'seller_id' => User::factory(),
             'plant_id' => $plant?->id,
             'title' => Str::title($title),
             'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(10000, 999999),

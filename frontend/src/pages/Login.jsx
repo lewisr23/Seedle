@@ -28,28 +28,31 @@ export default function Login() {
 
   return (
     <div className="page container">
-      <h1 className="page-title">Log in</h1>
-      <p className="page-subtitle">Welcome back to your garden.</p>
+      <div className="auth-shell">
+        <span className="eyebrow">Welcome back</span>
+        <h1 className="page-title">Log in</h1>
+        <p className="page-subtitle">Good to see you again.</p>
 
-      {error && <div className="alert alert--error">{error}</div>}
+        {error && <div className="alert alert--error">{error}</div>}
 
-      <form className="form" onSubmit={submit}>
-        <div className="field">
-          <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div className="field">
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <button className="btn" type="submit" disabled={busy}>
-          {busy ? 'Logging in...' : 'Log in'}
-        </button>
-      </form>
+        <form className="form" onSubmit={submit} style={{ maxWidth: 'none' }}>
+          <div className="field">
+            <label>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label>Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
+          <button className="btn btn--block" type="submit" disabled={busy}>
+            {busy ? 'Logging in...' : 'Log in'}
+          </button>
+        </form>
 
-      <p style={{ marginTop: 16, fontSize: 14 }}>
-        No account yet? <Link to="/register">Sign up</Link>
-      </p>
+        <p style={{ marginTop: 18, fontSize: 14 }}>
+          No account yet? <Link to="/register">Sign up</Link>
+        </p>
+      </div>
     </div>
   );
 }
