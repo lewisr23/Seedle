@@ -5,13 +5,16 @@ import './styles/main.scss';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SavedProvider } from './context/SavedContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <App />
+          <SavedProvider>
+            <App />
+          </SavedProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

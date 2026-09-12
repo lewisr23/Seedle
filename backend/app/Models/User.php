@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -51,6 +52,16 @@ class User extends Authenticatable
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'buyer_id');
+    }
+
+    public function savedProducts(): MorphToMany
+    {
+        return $this->morphedByMany(Product::class, 'savable', 'saves')->withTimestamps();
+    }
+
+    public function savedPlants(): MorphToMany
+    {
+        return $this->morphedByMany(Plant::class, 'savable', 'saves')->withTimestamps();
     }
 
     public function conversationsAsBuyer(): HasMany

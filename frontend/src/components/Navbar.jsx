@@ -54,6 +54,11 @@ export default function Navbar() {
             🛒
             {totalItems > 0 && <span className="navbar__cart-badge">{totalItems}</span>}
           </NavLink>
+          {user && (
+            <NavLink to="/saved" className="navbar__cart" aria-label="Saved items">
+              ♡
+            </NavLink>
+          )}
           {user && <MessagesLink />}
           {user && <NotificationBell />}
           {user ? (
@@ -114,6 +119,9 @@ export default function Navbar() {
             <>
               <NavLink to={`/u/${user.username}`} className="navbar__mobile-link" onClick={closeMenu}>
                 <Avatar name={user.username} size={22} /> {user.username}
+              </NavLink>
+              <NavLink to="/saved" className="navbar__mobile-link" onClick={closeMenu}>
+                Saved
               </NavLink>
               <NavLink to="/messages" className="navbar__mobile-link" onClick={closeMenu}>
                 Messages

@@ -10,6 +10,7 @@ import Orders from './pages/Orders';
 import Login from './pages/Login';
 import Messages from './pages/Messages';
 import Register from './pages/Register';
+import Saved from './pages/Saved';
 import Conversation from './pages/Conversation';
 import Feed from './pages/Feed';
 import PostDetail from './pages/PostDetail';
@@ -47,6 +48,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/saved"
+            element={
+              <ProtectedRoute>
+                <Saved />
               </ProtectedRoute>
             }
           />

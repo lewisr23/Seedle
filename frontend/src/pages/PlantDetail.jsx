@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api } from '../api/client';
+import SaveButton from '../components/SaveButton';
 import ProductCard from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
 
@@ -38,9 +39,12 @@ export default function PlantDetail() {
 
       <div className="card" style={{ padding: 28, marginTop: 14 }}>
         <span className="tag">{plant.type}</span>
-        <h1 className="page-title" style={{ marginTop: 10 }}>
-          {plant.name}
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
+          <h1 className="page-title" style={{ margin: 0 }}>
+            {plant.name}
+          </h1>
+          <SaveButton type="plant" id={plant.id} returnTo={`/plants/${plant.id}`} size={24} />
+        </div>
         {plant.description && <p style={{ color: 'var(--ink-700)', maxWidth: '62ch' }}>{plant.description}</p>}
 
         <div className="plant-facts">

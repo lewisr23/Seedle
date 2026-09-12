@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useCart } from '../context/CartContext';
 import MessageSeller from '../components/MessageSeller';
+import SaveButton from '../components/SaveButton';
 import ProductReviews from '../components/ProductReviews';
 import Stars from '../components/Stars';
 
@@ -64,7 +65,8 @@ export default function ProductDetail() {
             <Link to={`/u/${product.seller?.username}`}>{product.seller?.username}</Link>
           </p>
 
-          <div style={{ marginTop: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <SaveButton type="product" id={product.id} returnTo={`/products/${product.id}`} size={24} />
             <MessageSeller product={product} />
           </div>
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 #[Fillable([
     'seller_id', 'plant_id', 'title', 'slug', 'description', 'category',
@@ -38,6 +39,11 @@ class Product extends Model
     public function plant(): BelongsTo
     {
         return $this->belongsTo(Plant::class);
+    }
+
+    public function savers(): MorphToMany
+    {
+        return $this->morphToMany(User::class, 'savable', 'saves')->withTimestamps();
     }
 
     public function reviews(): HasMany

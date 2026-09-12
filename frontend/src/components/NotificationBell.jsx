@@ -8,6 +8,7 @@ const ICONS = {
   new_follower: '👋',
   new_comment: '💬',
   new_message: '✉️',
+  back_in_stock: '♥',
   order_status: '📦',
 };
 

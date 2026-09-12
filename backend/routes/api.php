@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PlantController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -66,6 +67,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/conversations/unread-count', [ConversationController::class, 'unreadCount']);
     Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
     Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'storeMessage']);
+
+    Route::get('/saved', [SavedItemController::class, 'index']);
+    Route::get('/saved/ids', [SavedItemController::class, 'ids']);
+    Route::post('/products/{product}/save', [SavedItemController::class, 'saveProduct']);
+    Route::delete('/products/{product}/save', [SavedItemController::class, 'unsaveProduct']);
+    Route::post('/plants/{plant}/save', [SavedItemController::class, 'savePlant']);
+    Route::delete('/plants/{plant}/save', [SavedItemController::class, 'unsavePlant']);
 
     Route::get('/my-listings', [ProductController::class, 'mine']);
     Route::post('/products', [ProductController::class, 'store']);
