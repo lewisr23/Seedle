@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Avatar from './Avatar';
+import MessagesLink from './MessagesLink';
 import NotificationBell from './NotificationBell';
 
 const LINKS = [
@@ -53,6 +54,7 @@ export default function Navbar() {
             🛒
             {totalItems > 0 && <span className="navbar__cart-badge">{totalItems}</span>}
           </NavLink>
+          {user && <MessagesLink />}
           {user && <NotificationBell />}
           {user ? (
             <>
@@ -112,6 +114,9 @@ export default function Navbar() {
             <>
               <NavLink to={`/u/${user.username}`} className="navbar__mobile-link" onClick={closeMenu}>
                 <Avatar name={user.username} size={22} /> {user.username}
+              </NavLink>
+              <NavLink to="/messages" className="navbar__mobile-link" onClick={closeMenu}>
+                Messages
               </NavLink>
               <NavLink to="/orders" className="navbar__mobile-link" onClick={closeMenu}>
                 Your orders

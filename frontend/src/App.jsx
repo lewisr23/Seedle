@@ -8,7 +8,9 @@ import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Login from './pages/Login';
+import Messages from './pages/Messages';
 import Register from './pages/Register';
+import Conversation from './pages/Conversation';
 import Feed from './pages/Feed';
 import PostDetail from './pages/PostDetail';
 import Sell from './pages/Sell';
@@ -45,6 +47,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages/:id"
+            element={
+              <ProtectedRoute>
+                <Conversation />
               </ProtectedRoute>
             }
           />

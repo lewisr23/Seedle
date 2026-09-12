@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useCart } from '../context/CartContext';
+import MessageSeller from '../components/MessageSeller';
 import ProductReviews from '../components/ProductReviews';
 import Stars from '../components/Stars';
 
@@ -62,6 +63,10 @@ export default function ProductDetail() {
             {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'} · sold by{' '}
             <Link to={`/u/${product.seller?.username}`}>{product.seller?.username}</Link>
           </p>
+
+          <div style={{ marginTop: 12 }}>
+            <MessageSeller product={product} />
+          </div>
 
           {product.plant && (
             <div className="card" style={{ padding: 16, marginTop: 16, background: 'var(--green-50)' }}>

@@ -7,6 +7,7 @@ const ICONS = {
   new_sale: '💰',
   new_follower: '👋',
   new_comment: '💬',
+  new_message: '✉️',
   order_status: '📦',
 };
 

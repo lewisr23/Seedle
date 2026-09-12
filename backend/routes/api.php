@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\GardenBedController;
 use App\Http\Controllers\Api\GuideController;
 use App\Http\Controllers\Api\NotificationController;
@@ -59,6 +60,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/posts/{post}/pin', [PostController::class, 'pin']);
     Route::delete('/posts/{post}/pin', [PostController::class, 'unpin']);
     Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::post('/conversations', [ConversationController::class, 'store']);
+    Route::get('/conversations/unread-count', [ConversationController::class, 'unreadCount']);
+    Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
+    Route::post('/conversations/{conversation}/messages', [ConversationController::class, 'storeMessage']);
 
     Route::get('/my-listings', [ProductController::class, 'mine']);
     Route::post('/products', [ProductController::class, 'store']);
