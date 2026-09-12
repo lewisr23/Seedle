@@ -10,7 +10,7 @@ A social marketplace and planning tool for gardeners: buy and sell seeds, plants
 - **"What can I plant right now?"** — recommendations filtered by hardiness zone and the current month
 - **Guides** — 15 written guides across getting-started, soil, watering, pests, seasonal jobs, tools and composting, filterable by category and linked to specific plants where relevant
 - **Social feed** — post updates, questions and tips, follow other gardeners, like and comment, pin your own posts to the top of your profile, with suggested gardeners to follow
-- **Messaging** — buyers can ask a seller about a listing from the product page; one thread per buyer/listing pair so asking twice continues the conversation rather than forking it, with unread counts in the navbar and the other party notified through the queue
+- **Messaging** — buyers can ask a seller about a listing from the product page; one thread per buyer/listing pair so asking twice continues the conversation rather than forking it, with unread counts in the navbar, the other party notified through the queue, and an open thread polling so a reply appears without a refresh
 - **Notifications** — database-backed notifications for sales, new followers, comments and order status, delivered through the queue and surfaced in a navbar bell
 - **Reviews** — star ratings and written reviews, restricted to verified buyers (you can only review something you actually ordered, and never your own listing), feeding an average rating into product cards and a "top rated" sort
 - **Seller dashboard** — manage your own listings (inline price/stock edits, pause/resume, delete) and see orders containing your products, with revenue totals
@@ -135,7 +135,7 @@ cd frontend
 npm test
 ```
 
-62 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, and the "message seller" composer (own-listing and signed-out cases included).
+69 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), and the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval.
 
 Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove" — so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 

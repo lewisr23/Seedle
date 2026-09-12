@@ -13,17 +13,42 @@ export default function Conversation() {
   const endRef = useRef(null);
 
   useEffect(() => {
-    api(`/conversations/${id}`)
-      .then(setConversationFromResponse)
-      .catch((err) =>
-        setError(err instanceof ApiError && err.status === 403
-          ? 'This conversation is not yours.'
-          : 'Could not load this conversation.')
-      );
+    let cancelled = false;
 
-    function setConversationFromResponse(res) {
-      setConversation(res.data);
-    }
+    const load = (isPoll) =>
+      api(`/conversations/${id}`)
+        .then((res) => {
+          if (cancelled) return;
+          setConversation((prev) => {
+            // A poll that brings nothing new keeps the existing object, so the
+            // thread doesn't re-render (and re-scroll) every few seconds.
+            if (isPoll && prev && prev.messages.length === res.data.messages.length) {
+              return prev;
+            }
+            return res.data;
+          });
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          // Only a first load should surface an error; a dropped poll is not
+          // worth throwing the whole thread away over.
+          if (isPoll) return;
+          setError(
+            err instanceof ApiError && err.status === 403
+              ? 'This conversation is not yours.'
+              : 'Could not load this conversation.'
+          );
+        });
+
+    load(false);
+    // The other side's replies arrive out of band, so poll for them the same
+    // way the orders page picks up async status changes.
+    const interval = setInterval(() => load(true), 5000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [id]);
 
   // Keep the newest message in view, the way any thread view should behave.
