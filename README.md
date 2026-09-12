@@ -136,7 +136,7 @@ cd frontend
 npm test
 ```
 
-83 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, and the saved-items context with its optimistic heart toggle and rollback on failure.
+91 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (out-of-stock handling, ratings appearing only once reviewed, and its save toggle).
 
 Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove" — so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 
@@ -146,4 +146,4 @@ Kubernetes and a Google Cloud deployment aren't included — adding untested man
 
 ## Login
 
-The seeder creates `test@example.com` / `password` plus 150 random users (all with password `password`) with realistic product listings, posts, and order history, so the app is populated from the first run rather than empty.
+The seeder creates `test@example.com` / `password` — already holding saved listings and plants, plus a few conversations with unread replies waiting, so the saved page and inbox aren't empty on a first run — plus 150 random users (all with password `password`) with realistic product listings, posts, and order history, so the app is populated from the first run rather than empty.

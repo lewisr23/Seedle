@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSaved } from '../context/SavedContext';
 
@@ -10,12 +10,15 @@ export default function SaveButton({ type, id, returnTo, size = 20 }) {
   const { user } = useAuth();
   const { isSaved, toggle } = useSaved();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Send them back where they were unless the caller says otherwise.
+  const back = returnTo ?? location.pathname;
 
   const saved = user ? isSaved(type, id) : false;
 
   const onClick = () => {
     if (!user) {
-      navigate('/login', { state: { from: { pathname: returnTo } } });
+      navigate('/login', { state: { from: { pathname: back } } });
       return;
     }
     toggle(type, id);

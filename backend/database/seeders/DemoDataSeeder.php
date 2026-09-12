@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PostType;
 use App\Enums\ProductCategory;
 use App\Models\Plant;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
@@ -29,6 +30,10 @@ class DemoDataSeeder extends Seeder
 
     private const ORDER_COUNT = 120;
 
+    private const SAVE_COUNT = 400;
+
+    private const CONVERSATION_COUNT = 60;
+
     public function run(): void
     {
         $this->command->info('Seeding users...');
@@ -48,6 +53,12 @@ class DemoDataSeeder extends Seeder
 
         $this->command->info('Seeding likes and comments...');
         $this->seedEngagement($userIds);
+
+        $this->command->info('Seeding saved items...');
+        $this->seedSaves($userIds, $plantIds);
+
+        $this->command->info('Seeding conversations...');
+        $this->seedConversations($userIds);
 
         $this->command->info('Seeding '.self::ORDER_COUNT.' historical orders...');
         $this->seedOrders($userIds);
@@ -279,6 +290,159 @@ class DemoDataSeeder extends Seeder
 
             DB::table('order_items')->insert($itemRows);
             DB::table('orders')->where('id', $orderId)->update(['total_pence' => $total]);
+        }
+    }
+
+    /**
+     * Saves span both savable types so the saved page has something in each
+     * section. The demo account gets its own handful, since landing on an
+     * empty page is a poor first impression of the feature.
+     */
+    private function seedSaves(array $userIds, array $plantIds): void
+    {
+        $now = now();
+        $productIds = DB::table('products')->inRandomOrder()->limit(600)->pluck('id')->all();
+
+        if ($productIds === [] || $plantIds === []) {
+            return;
+        }
+
+        $rows = [];
+        $seen = [];
+
+        $add = function (int $userId, string $type, int $id) use (&$rows, &$seen, $now) {
+            // The table is uniquely keyed on the three together, so the same
+            // pair must not be generated twice in one batch.
+            $key = $userId.'|'.$type.'|'.$id;
+            if (isset($seen[$key])) {
+                return;
+            }
+            $seen[$key] = true;
+
+            $rows[] = [
+                'user_id' => $userId,
+                'savable_type' => $type,
+                'savable_id' => $id,
+                'created_at' => $now->copy()->subDays(random_int(0, 60)),
+                'updated_at' => $now,
+            ];
+        };
+
+        $demoUserId = DB::table('users')->where('email', 'test@example.com')->value('id');
+        if ($demoUserId !== null) {
+            foreach (array_slice($productIds, 0, 6) as $productId) {
+                $add((int) $demoUserId, Product::class, (int) $productId);
+            }
+            foreach (array_slice($plantIds, 0, 4) as $plantId) {
+                $add((int) $demoUserId, Plant::class, (int) $plantId);
+            }
+        }
+
+        for ($i = 0; $i < self::SAVE_COUNT; $i++) {
+            $userId = $userIds[array_rand($userIds)];
+
+            if (random_int(1, 4) === 1) {
+                $add($userId, Plant::class, $plantIds[array_rand($plantIds)]);
+            } else {
+                $add($userId, Product::class, $productIds[array_rand($productIds)]);
+            }
+        }
+
+        foreach (array_chunk($rows, 500) as $chunk) {
+            DB::table('saves')->insert($chunk);
+        }
+    }
+
+    /**
+     * Conversations are always buyer -> the listing's seller, matching what the
+     * API enforces. The demo account gets a few with an unread reply waiting so
+     * the inbox badge has something to show.
+     */
+    private function seedConversations(array $userIds): void
+    {
+        $now = now();
+        $products = DB::table('products')->inRandomOrder()->limit(400)->get(['id', 'seller_id']);
+
+        if ($products->isEmpty()) {
+            return;
+        }
+
+        $openers = [
+            'Hi, is this still available?',
+            'Do you post to Scotland?',
+            'How soon after delivery should I sow these?',
+            'Would these do all right in a north-facing bed?',
+            'Any chance of a discount if I take two?',
+        ];
+        $replies = [
+            'Yes, still available - happy to post this week.',
+            'It should be fine, just keep it out of the wind.',
+            'I post everywhere in the UK, usually next-day.',
+            'Sow them straight away for the best germination.',
+            'I can do a bit off for two, yes.',
+        ];
+
+        $demoUserId = (int) DB::table('users')->where('email', 'test@example.com')->value('id');
+        $pairs = [];
+        $made = 0;
+
+        foreach ($products as $index => $product) {
+            if ($made >= self::CONVERSATION_COUNT) {
+                break;
+            }
+
+            // First few belong to the demo account so its inbox isn't empty.
+            $buyerId = $made < 3 && $demoUserId > 0 ? $demoUserId : $userIds[array_rand($userIds)];
+
+            if ($buyerId === (int) $product->seller_id) {
+                continue;
+            }
+
+            $key = $buyerId.'|'.$product->seller_id.'|'.$product->id;
+            if (isset($pairs[$key])) {
+                continue;
+            }
+            $pairs[$key] = true;
+
+            $startedAt = $now->copy()->subDays(random_int(0, 30))->subHours(random_int(0, 23));
+            $conversationId = DB::table('conversations')->insertGetId([
+                'product_id' => $product->id,
+                'buyer_id' => $buyerId,
+                'seller_id' => $product->seller_id,
+                'last_message_at' => $startedAt,
+                'created_at' => $startedAt,
+                'updated_at' => $startedAt,
+            ]);
+
+            $messages = [[
+                'conversation_id' => $conversationId,
+                'sender_id' => $buyerId,
+                'body' => $openers[array_rand($openers)],
+                // The buyer's own message counts as read by them.
+                'read_at' => $startedAt,
+                'created_at' => $startedAt,
+                'updated_at' => $startedAt,
+            ]];
+
+            $lastAt = $startedAt;
+
+            // Most threads get an answer; leaving some unanswered is realistic.
+            if (random_int(1, 5) > 1) {
+                $lastAt = $startedAt->copy()->addHours(random_int(1, 20));
+                $messages[] = [
+                    'conversation_id' => $conversationId,
+                    'sender_id' => $product->seller_id,
+                    'body' => $replies[array_rand($replies)],
+                    // Unread for the demo account, so the badge shows a count.
+                    'read_at' => $buyerId === $demoUserId ? null : $lastAt,
+                    'created_at' => $lastAt,
+                    'updated_at' => $lastAt,
+                ];
+            }
+
+            DB::table('messages')->insert($messages);
+            DB::table('conversations')->where('id', $conversationId)->update(['last_message_at' => $lastAt]);
+            $made++;
         }
     }
 }

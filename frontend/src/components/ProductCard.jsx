@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import SaveButton from './SaveButton';
 import Stars from './Stars';
 
 const CATEGORY_META = {
@@ -13,10 +14,22 @@ export default function ProductCard({ product, onAddToCart }) {
   const meta = CATEGORY_META[product.category] || CATEGORY_META.other;
 
   return (
-    <div className="product-card">
+    <div className="product-card" style={{ position: 'relative' }}>
       <Link to={`/products/${product.id}`} className={`product-card__media media-${product.category}`}>
         {meta.icon}
       </Link>
+      <div
+        style={{
+          position: 'absolute',
+          top: 6,
+          right: 6,
+          background: 'rgba(255, 255, 255, 0.85)',
+          borderRadius: '50%',
+          lineHeight: 0,
+        }}
+      >
+        <SaveButton type="product" id={product.id} size={18} />
+      </div>
       <div className="product-card__body">
         <span className="product-card__category">{meta.label}</span>
         <Link to={`/products/${product.id}`}>
