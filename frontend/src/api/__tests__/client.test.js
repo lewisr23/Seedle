@@ -84,6 +84,30 @@ describe('request building', () => {
   });
 });
 
+describe('file uploads', () => {
+  it('sends FormData as-is and leaves Content-Type to the browser', async () => {
+    const fetchMock = stubFetch({ status: 201, json: { path: 'product-images/a.jpg' } });
+    const formData = new FormData();
+    formData.append('image', new Blob(['x'], { type: 'image/jpeg' }), 'a.jpg');
+
+    await api('/product-images', { method: 'POST', formData });
+
+    const { init } = lastCall(fetchMock);
+    expect(init.body).toBe(formData);
+    // Setting it by hand would omit the multipart boundary and break the upload.
+    expect(init.headers['Content-Type']).toBeUndefined();
+  });
+
+  it('still attaches the bearer token to an upload', async () => {
+    setToken('tok-9');
+    const fetchMock = stubFetch({ status: 201, json: {} });
+
+    await api('/product-images', { method: 'POST', formData: new FormData() });
+
+    expect(lastCall(fetchMock).init.headers.Authorization).toBe('Bearer tok-9');
+  });
+});
+
 describe('response handling', () => {
   it('returns parsed JSON on success', async () => {
     stubFetch({ json: { data: [{ id: 1, title: 'Tomato seeds' }] } });

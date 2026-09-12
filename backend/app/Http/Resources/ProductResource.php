@@ -21,7 +21,7 @@ class ProductResource extends JsonResource
             'price_pounds' => $this->priceInPounds(),
             'stock' => $this->stock,
             'is_active' => $this->is_active,
-            'images' => $this->images,
+            'images' => $this->imageUrls(),
             'rating_average' => $this->reviews_avg_rating !== null ? round((float) $this->reviews_avg_rating, 1) : null,
             'reviews_count' => $this->reviews_count ?? null,
             'seller' => new UserResource($this->whenLoaded('seller')),

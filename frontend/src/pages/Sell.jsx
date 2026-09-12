@@ -24,6 +24,10 @@ export default function Sell() {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // Uploaded up front so the listing is created with its photos already in
+  // place; each entry is { path, url }.
+  const [images, setImages] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     api('/plants', { params: { per_page: 100 } }).then((res) => setPlants(res.data));
@@ -46,6 +50,7 @@ export default function Sell() {
           plant_id: form.plant_id || null,
           price_pence: Math.round(Number(form.price) * 100),
           stock: Number(form.stock),
+          images: images.map((image) => image.path),
         },
       });
       navigate(`/products/${res.data.id}`);
@@ -59,6 +64,34 @@ export default function Sell() {
       setBusy(false);
     }
   };
+
+  const addImages = async (event) => {
+    const files = Array.from(event.target.files ?? []);
+    // Let the same file be picked again after a removal.
+    event.target.value = '';
+    if (files.length === 0) return;
+
+    setError('');
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await api('/product-images', { method: 'POST', formData });
+        setImages((current) => [...current, { path: res.path, url: res.url }]);
+      }
+    } catch (err) {
+      setError(
+        err instanceof ApiError && err.errors?.image
+          ? err.errors.image[0]
+          : 'Could not upload that image.'
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removeImage = (path) => setImages((current) => current.filter((i) => i.path !== path));
 
   const usesPlant = form.category === 'seed' || form.category === 'live_plant';
 
@@ -78,6 +111,51 @@ export default function Sell() {
         <div className="field">
           <label>Description</label>
           <textarea value={form.description} onChange={update('description')} />
+        </div>
+        <div className="field">
+          <label htmlFor="listing-photos">Photos (optional)</label>
+          <input
+            id="listing-photos"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            onChange={addImages}
+            disabled={uploading}
+          />
+          {uploading && <span className="error-text">Uploading...</span>}
+          {images.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+              {images.map((image) => (
+                <div key={image.path} style={{ position: 'relative' }}>
+                  <img
+                    src={image.url}
+                    alt=""
+                    style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 8 }}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remove photo"
+                    onClick={() => removeImage(image.path)}
+                    style={{
+                      position: 'absolute',
+                      top: -6,
+                      right: -6,
+                      border: 'none',
+                      borderRadius: '50%',
+                      width: 22,
+                      height: 22,
+                      cursor: 'pointer',
+                      background: 'var(--ink-700, #333)',
+                      color: '#fff',
+                      lineHeight: 1,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="field">
           <label>Category</label>

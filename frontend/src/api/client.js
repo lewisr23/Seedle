@@ -25,8 +25,9 @@ export class ApiError extends Error {
 /**
  * Thin fetch wrapper: attaches the bearer token, parses JSON, and throws
  * ApiError with the field-level validation messages Laravel returns on 422.
+ * Pass `formData` instead of `body` to send a file upload.
  */
-export async function api(path, { method = 'GET', body, params } = {}) {
+export async function api(path, { method = 'GET', body, formData, params } = {}) {
   const url = new URL(API_URL + path);
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -38,13 +39,15 @@ export async function api(path, { method = 'GET', body, params } = {}) {
 
   const token = getToken();
   const headers = { Accept: 'application/json' };
+  // Content-Type is deliberately left unset for FormData: the browser has to
+  // set it itself so the multipart boundary is included.
   if (body) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const response = await fetch(url, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: formData ?? (body ? JSON.stringify(body) : undefined),
   });
 
   let data = null;

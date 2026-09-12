@@ -39,7 +39,15 @@ export default function ProductDetail() {
     <div className="page container">
       <div className="card" style={{ maxWidth: 640, overflow: 'hidden' }}>
         <div className={`product-card__media media-${product.category}`} style={{ height: 160, fontSize: 56 }}>
-          {meta.icon}
+          {product.images?.[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.title}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            meta.icon
+          )}
         </div>
         <div style={{ padding: 24 }}>
           <span className="tag">{meta.label}</span>
@@ -53,6 +61,19 @@ export default function ProductDetail() {
                 {product.rating_average} · {product.reviews_count} review
                 {product.reviews_count === 1 ? '' : 's'}
               </span>
+            </div>
+          )}
+          {product.images?.length > 1 && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+              {product.images.slice(1).map((src) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={product.title}
+                  loading="lazy"
+                  style={{ width: 88, height: 88, objectFit: 'cover', borderRadius: 8 }}
+                />
+              ))}
             </div>
           )}
           <p style={{ color: 'var(--ink-500)' }}>{product.description}</p>

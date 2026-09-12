@@ -10,6 +10,7 @@ A social marketplace and planning tool for gardeners: buy and sell seeds, plants
 - **"What can I plant right now?"** — recommendations filtered by hardiness zone and the current month
 - **Guides** — 15 written guides across getting-started, soil, watering, pests, seasonal jobs, tools and composting, filterable by category and linked to specific plants where relevant
 - **Social feed** — post updates, questions and tips, follow other gardeners, like and comment, pin your own posts to the top of your profile, with suggested gardeners to follow
+- **Listing photos** — sellers upload images when creating a listing; they show on cards and the product page, with the category emoji as a fallback for listings without one
 - **Saved items** — heart any listing or plant to keep it on a saved page; saving an out-of-stock listing gets you a notification when the seller restocks it (only on the genuine 0 → in-stock transition, and not while the listing is paused)
 - **Messaging** — buyers can ask a seller about a listing from the product page; one thread per buyer/listing pair so asking twice continues the conversation rather than forking it, with unread counts in the navbar, the other party notified through the queue, and an open thread polling so a reply appears without a refresh
 - **Notifications** — database-backed notifications for sales, new followers, comments and order status, delivered through the queue and surfaced in a navbar bell
@@ -45,6 +46,16 @@ Checkout (`CheckoutService::placeOrder`, [backend/app/Services/Orders/CheckoutSe
 Those listeners send real database notifications rather than writing to a log, so the async pipeline is visible in the UI: place an order and the seller's notification bell updates once a worker picks the job up.
 
 In `docker-compose.yml` the queue worker is its own container, so it scales independently of the web tier (`docker compose up -d --scale queue-worker=3`) — fulfilment throughput isn't coupled to request throughput.
+
+## Media storage
+
+Uploaded listing photos go to the `public` disk and are served back through a
+Laravel route rather than a `public/storage` symlink. `storage:link` is awkward
+across the Docker bind mount on Windows, and a route behaves identically in
+every environment. The route is deliberately unauthenticated, because an `<img>`
+tag cannot send a bearer token, and it refuses any path outside the upload
+directory. Only the bare storage path is persisted, so the hostname isn't baked
+into the data — the full URL is built per request.
 
 ## Performance notes
 
@@ -119,7 +130,7 @@ cd backend
 php artisan test
 ```
 
-88 tests covering auth, checkout (including insufficient-stock and multi-seller-split cases), product search filters and sorting, reviews and the verified-buyer rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), and saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases).
+98 tests covering auth, checkout (including insufficient-stock and multi-seller-split cases), product search filters and sorting, reviews and the verified-buyer rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases), and listing images (type and size validation, generated filenames, unauthenticated serving, and refusing to serve anything outside the upload directory).
 
 To run them inside the container instead, pass the test environment as real environment variables:
 
@@ -136,7 +147,7 @@ cd frontend
 npm test
 ```
 
-91 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (out-of-stock handling, ratings appearing only once reviewed, and its save toggle).
+96 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (out-of-stock handling, ratings appearing only once reviewed, its save toggle, and photo-versus-emoji fallback).
 
 Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove" — so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 

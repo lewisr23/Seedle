@@ -51,6 +51,18 @@ class Product extends Model
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Stored as bare storage paths so the data doesn't bake in a hostname;
+     * the URL is built per request instead.
+     */
+    public function imageUrls(): array
+    {
+        return array_map(
+            fn (string $path) => str_starts_with($path, 'http') ? $path : url('/api/images/'.$path),
+            $this->images ?? []
+        );
+    }
+
     public function priceInPounds(): float
     {
         return round($this->price_pence / 100, 2);

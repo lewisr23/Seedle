@@ -67,6 +67,32 @@ describe('what the card shows', () => {
   });
 });
 
+describe('the photo', () => {
+  it('shows the first uploaded photo when there is one', () => {
+    renderCard(product({ images: ['http://localhost:8000/api/images/product-images/a.jpg'] }));
+
+    const img = screen.getByRole('img', { name: 'Tomato seeds' });
+    expect(img).toHaveAttribute('src', 'http://localhost:8000/api/images/product-images/a.jpg');
+    expect(img).toHaveAttribute('loading', 'lazy');
+  });
+
+  it('falls back to the category emoji with no photos', () => {
+    renderCard(product({ images: [] }));
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+    expect(screen.getByText('🌱')).toBeInTheDocument();
+  });
+
+  it('copes with images being absent entirely', () => {
+    const p = product();
+    delete p.images;
+
+    renderCard(p);
+
+    expect(screen.getByText('🌱')).toBeInTheDocument();
+  });
+});
+
 describe('adding to the cart', () => {
   it('hands the product back to the caller', async () => {
     const onAddToCart = vi.fn();

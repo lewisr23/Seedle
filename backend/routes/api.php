@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PlantController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\UserController;
@@ -24,6 +25,8 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 
 Route::get('/products/{product}/reviews', [ReviewController::class, 'index']);
+
+Route::get('/images/{path}', [ProductImageController::class, 'show'])->where('path', '.*');
 
 Route::get('/plants', [PlantController::class, 'index']);
 Route::get('/plants/recommendations', [PlantController::class, 'recommendations']);
@@ -76,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/plants/{plant}/save', [SavedItemController::class, 'unsavePlant']);
 
     Route::get('/my-listings', [ProductController::class, 'mine']);
+    Route::post('/product-images', [ProductImageController::class, 'store']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::put('/products/{product}', [ProductController::class, 'update']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);

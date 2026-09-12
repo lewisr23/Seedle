@@ -12,11 +12,21 @@ const CATEGORY_META = {
 
 export default function ProductCard({ product, onAddToCart }) {
   const meta = CATEGORY_META[product.category] || CATEGORY_META.other;
+  const photo = product.images?.[0];
 
   return (
     <div className="product-card" style={{ position: 'relative' }}>
       <Link to={`/products/${product.id}`} className={`product-card__media media-${product.category}`}>
-        {meta.icon}
+        {photo ? (
+          <img
+            src={photo}
+            alt={product.title}
+            loading="lazy"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          meta.icon
+        )}
       </Link>
       <div
         style={{
