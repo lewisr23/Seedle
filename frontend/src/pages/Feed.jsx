@@ -92,7 +92,7 @@ export default function Feed() {
             <div className="empty-state">
               <span className="empty-state__icon">🌾</span>
               {tab === 'following'
-                ? "Nothing here yet — follow a few gardeners and their posts will show up."
+                ? "Nothing here yet: follow a few gardeners and their posts will show up."
                 : 'Nothing here yet.'}
             </div>
           )}

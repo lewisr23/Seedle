@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "lewisr23/growguide",
     "type": "project",
-    "description": "GrowGuide API — a social marketplace and planning tool for gardeners.",
+    "description": "GrowGuide API. A social marketplace and planning tool for gardeners.",
     "keywords": ["laravel", "growguide"],
     "license": "MIT",
     "require": {

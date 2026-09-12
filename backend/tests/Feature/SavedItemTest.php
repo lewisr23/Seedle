@@ -106,7 +106,10 @@ class SavedItemTest extends TestCase
     {
         $watcher = User::factory()->create();
         $bystander = User::factory()->create();
-        $product = Product::factory()->create(['stock' => 0]);
+        // is_active must be pinned: the factory sets it randomly (92% true),
+        // and a paused listing deliberately does not notify, so leaving it to
+        // chance makes this test fail roughly one run in twelve.
+        $product = Product::factory()->create(['stock' => 0, 'is_active' => true]);
 
         $this->actingAs($watcher, 'sanctum')->postJson("/api/products/{$product->id}/save")->assertOk();
 

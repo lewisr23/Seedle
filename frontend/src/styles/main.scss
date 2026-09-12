@@ -329,7 +329,7 @@ h1.page-title {
   }
 
   // .navbar__logout also carries .btn, whose unconditional `display` rule
-  // ties on specificity and comes later in the source — the extra .navbar
+  // ties on specificity and comes later in the source. The extra .navbar
   // ancestor here bumps specificity so the hide actually wins.
   .navbar .navbar__logout {
     display: none;
@@ -1161,7 +1161,7 @@ h1.page-title {
   }
 
   // On narrow screens the bell isn't at the viewport edge, so anchoring the
-  // panel to it pushes the panel off-screen — pin it to the viewport instead.
+  // panel to it pushes the panel off-screen: pin it to the viewport instead.
   @media (max-width: 560px) {
     &__panel {
       position: fixed;

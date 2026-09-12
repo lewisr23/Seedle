@@ -58,17 +58,17 @@ export default function PlantDetail() {
           </div>
           <div>
             <span>Soil</span>
-            <strong>{plant.soil_type || '—'}</strong>
+            <strong>{plant.soil_type || ': '}</strong>
           </div>
           <div>
             <span>Hardiness</span>
             <strong>
-              Zones {plant.min_zone}–{plant.max_zone}
+              Zones {plant.min_zone}: {plant.max_zone}
             </strong>
           </div>
           <div>
             <span>Time to harvest</span>
-            <strong>{plant.days_to_maturity ? `${plant.days_to_maturity} days` : '—'}</strong>
+            <strong>{plant.days_to_maturity ? `${plant.days_to_maturity} days` : ': '}</strong>
           </div>
         </div>
       </div>

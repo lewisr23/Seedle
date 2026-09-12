@@ -33,7 +33,7 @@ export default function Guides() {
       <span className="eyebrow">Learn</span>
       <h1 className="page-title">Guides &amp; tips</h1>
       <p className="page-subtitle">
-        Practical, no-nonsense advice — from your first vegetable bed to fixing a smelly compost bin.
+        Practical, no-nonsense advice: from your first vegetable bed to fixing a smelly compost bin.
       </p>
 
       <div className="filters">

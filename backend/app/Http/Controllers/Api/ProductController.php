@@ -37,7 +37,7 @@ class ProductController extends Controller
     }
 
     /**
-     * The current user's own listings — unlike the public search this includes
+     * The current user's own listings, unlike the public search this includes
      * deactivated and out-of-stock ones, since a seller still needs to manage them.
      */
     public function mine(Request $request): AnonymousResourceCollection

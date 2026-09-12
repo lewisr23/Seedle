@@ -16,7 +16,7 @@ class PostFactory extends Factory
     private const QUESTIONS = [
         'Why are my tomato leaves turning yellow at the bottom?',
         'Is it too late to sow carrots this month?',
-        'My courgette flowers are dropping off without fruiting — normal?',
+        'My courgette flowers are dropping off without fruiting: normal?',
         'Best way to keep slugs off my lettuce without chemicals?',
         'Can I plant strawberries in a container this small?',
     ];

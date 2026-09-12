@@ -37,7 +37,7 @@ class PostController extends Controller
     }
 
     /**
-     * Public explore feed — everyone's posts, newest first.
+     * Public explore feed, everyone's posts, newest first.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -53,7 +53,7 @@ class PostController extends Controller
     }
 
     /**
-     * A single user's posts, pinned post(s) first — used on profile pages.
+     * A single user's posts, pinned post(s) first, used on profile pages.
      */
     public function forUser(User $user): AnonymousResourceCollection
     {

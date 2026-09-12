@@ -98,7 +98,7 @@ export default function Sell() {
   return (
     <div className="page container">
       <h1 className="page-title">List something for sale</h1>
-      <p className="page-subtitle">Seeds, plants, tools or fertilizer — set your own price.</p>
+      <p className="page-subtitle">Seeds, plants, tools or fertilizer: set your own price.</p>
 
       {error && <div className="alert alert--error">{error}</div>}
 
@@ -169,7 +169,7 @@ export default function Sell() {
         </div>
         {usesPlant && (
           <div className="field">
-            <label>Plant (optional — shows care info to buyers)</label>
+            <label>Plant (optional: shows care info to buyers)</label>
             <select value={form.plant_id} onChange={update('plant_id')}>
               <option value="">None</option>
               {plants.map((p) => (

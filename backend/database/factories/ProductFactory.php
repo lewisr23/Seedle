@@ -35,7 +35,7 @@ class ProductFactory extends Factory
         };
 
         return [
-            // Always a fresh seller unless one is passed in — picking a random
+            // Always a fresh seller unless one is passed in, picking a random
             // existing user makes tests order-dependent (the buyer can end up
             // owning the product they're trying to act on).
             'seller_id' => User::factory(),

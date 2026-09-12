@@ -52,7 +52,7 @@ class PlantController extends Controller
     }
 
     /**
-     * "What can I plant right now?" — filtered by the requester's hardiness
+     * "What can I plant right now?": filtered by the requester's hardiness
      * zone and (optionally) a month other than the current one.
      */
     public function recommendations(Request $request, GardenHelperService $helper): AnonymousResourceCollection

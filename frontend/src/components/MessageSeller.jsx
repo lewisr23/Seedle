@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 /**
  * "Ask the seller a question" on a listing. Posting opens (or continues) the
  * one conversation between this buyer and this listing, then hands over to the
- * thread view — so the composer here only ever sends the first message.
+ * thread view, so the composer here only ever sends the first message.
  */
 export default function MessageSeller({ product }) {
   const { user } = useAuth();

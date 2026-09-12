@@ -14,7 +14,7 @@ return new class extends Migration
             // Polymorphic because the same "save" gesture applies to a listing
             // and to a plant in the reference library. morphs() also indexes
             // (savable_type, savable_id), which is the lookup the restock
-            // notification does — so no extra index is needed here.
+            // notification does, so no extra index is needed here.
             $table->morphs('savable');
             $table->timestamps();
 

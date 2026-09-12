@@ -84,7 +84,7 @@ export default function NotificationBell() {
             )}
           </div>
 
-          {items.length === 0 && <div className="notif__empty">Nothing yet — go plant something.</div>}
+          {items.length === 0 && <div className="notif__empty">Nothing yet: go plant something.</div>}
 
           {items.map((n) => (
             <button

@@ -12,7 +12,7 @@ use Throwable;
  *
  * Elasticsearch gives us fast full-text search plus facet counts (how many
  * results per category/sun-requirement) in a single query. If the cluster
- * is unreachable — e.g. running locally without Docker — we degrade to a
+ * is unreachable: e.g. running locally without Docker. We degrade to a
  * MySQL LIKE query so the marketplace keeps working, just without facets.
  */
 class ProductSearchService

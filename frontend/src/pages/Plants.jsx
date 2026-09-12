@@ -182,7 +182,7 @@ export default function Plants() {
               <span>☀️ {plant.sun_requirement.replace('_', ' ')}</span>
               <span>💧 {plant.water_needs}</span>
               <span>
-                🌡️ Zones {plant.min_zone}–{plant.max_zone}
+                🌡️ Zones {plant.min_zone}: {plant.max_zone}
               </span>
             </div>
           </Link>

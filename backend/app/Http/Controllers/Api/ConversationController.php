@@ -113,7 +113,7 @@ class ConversationController extends Controller
 
     /**
      * Write the message, bump the conversation's sort key, and tell the other
-     * side — the notification is queued, so the request doesn't wait on it.
+     * side. The notification is queued, so the request doesn't wait on it.
      */
     private function appendMessage(Conversation $conversation, int $senderId, string $body): Message
     {

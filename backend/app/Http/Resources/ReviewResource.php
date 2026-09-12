@@ -17,7 +17,7 @@ class ReviewResource extends JsonResource
             'body' => $this->body,
             'user' => new UserResource($this->whenLoaded('user')),
             // Listing reviews is a public route, so the default guard sees no
-            // user — ask the sanctum guard explicitly to honour a bearer token.
+            // user: ask the sanctum guard explicitly to honour a bearer token.
             'is_mine' => $request->user('sanctum')?->id === $this->user_id,
             'created_at' => $this->created_at,
         ];

@@ -22,7 +22,7 @@ class ProductImageController extends Controller
         ]);
 
         $file = $request->file('image');
-        // Never trust the client's filename — generate our own and keep only
+        // Never trust the client's filename: generate our own and keep only
         // the extension, which validation has already constrained.
         $name = Str::uuid()->toString().'.'.strtolower($file->getClientOriginalExtension());
 

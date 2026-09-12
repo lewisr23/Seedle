@@ -24,7 +24,7 @@ class CheckoutTest extends TestCase
         ]);
 
         // The response reflects state immediately after the synchronous,
-        // consistency-critical part of checkout — before the async
+        // consistency-critical part of checkout, before the async
         // fulfilment job (queued, not awaited) marks it completed.
         $response->assertCreated()
             ->assertJsonPath('data.total_pence', 1500)
@@ -51,7 +51,7 @@ class CheckoutTest extends TestCase
 
         $response->assertStatus(422);
 
-        // Stock must be untouched — the whole order should have rolled back.
+        // Stock must be untouched. The whole order should have rolled back.
         $this->assertDatabaseHas('products', ['id' => $product->id, 'stock' => 2]);
         $this->assertDatabaseCount('orders', 0);
     }

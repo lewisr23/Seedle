@@ -33,7 +33,7 @@ export default function Cart() {
     return (
       <div className="page container">
         <div className="alert alert--success">
-          Order #{placedOrder.id} placed — total £{placedOrder.total_pounds.toFixed(2)}. It's now being processed;
+          Order #{placedOrder.id} placed: total £{placedOrder.total_pounds.toFixed(2)}. It's now being processed;
           you can check its status any time on your <Link to="/orders">orders page</Link>.
         </div>
       </div>

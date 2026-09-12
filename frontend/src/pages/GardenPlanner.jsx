@@ -64,7 +64,7 @@ export default function GardenPlanner() {
       {beds?.length === 0 && (
         <div className="empty-state">
           <span className="empty-state__icon">🪴</span>
-          No garden beds yet — add one above to get started.
+          No garden beds yet: add one above to get started.
         </div>
       )}
 

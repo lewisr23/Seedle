@@ -142,19 +142,19 @@ export default function Dashboard() {
 
       <div className="stat-row">
         <div className="stat-card">
-          <strong>{listings?.length ?? '—'}</strong>
+          <strong>{listings?.length ?? ': '}</strong>
           <span>Listings</span>
         </div>
         <div className="stat-card">
-          <strong>{listings ? activeCount : '—'}</strong>
+          <strong>{listings ? activeCount : ': '}</strong>
           <span>Active</span>
         </div>
         <div className="stat-card">
-          <strong>{sales?.length ?? '—'}</strong>
+          <strong>{sales?.length ?? ': '}</strong>
           <span>Orders</span>
         </div>
         <div className="stat-card">
-          <strong>{sales ? `£${(revenuePence / 100).toFixed(2)}` : '—'}</strong>
+          <strong>{sales ? `£${(revenuePence / 100).toFixed(2)}` : ': '}</strong>
           <span>Revenue</span>
         </div>
       </div>

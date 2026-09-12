@@ -35,8 +35,8 @@ services:
       MYSQL_ROOT_PASSWORD: root
     ports:
       # 3307 on the host: a native Windows mysqld already owns 3306. Nothing
-      # inside the network cares — the app reaches this on mysql:3306 either
-      # way — so this port only matters for connecting a GUI client.
+      # inside the network cares. The app reaches this on mysql:3306 either
+      # way, so this port only matters for connecting a GUI client.
       - "3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
@@ -90,8 +90,7 @@ services:
       elasticsearch:
         condition: service_healthy
 
-  # A dedicated worker container is what makes fulfilment async in practice —
-  # scale this independently of the web tier with `docker compose up -d --scale queue-worker=3`.
+  # A dedicated worker container is what makes fulfilment async in practice: # scale this independently of the web tier with `docker compose up -d --scale queue-worker=3`.
   queue-worker:
     build: *backend-build
     restart: unless-stopped
@@ -128,7 +127,7 @@ services:
       - /app/node_modules
     environment:
       VITE_API_URL: http://localhost:8000/api
-      # Switches Vite's watcher to polling — see vite.config.js.
+      # Switches Vite's watcher to polling. See vite.config.js.
       DOCKER: "true"
 
 volumes:

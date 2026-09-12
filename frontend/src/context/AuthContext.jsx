@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
     try {
       await api('/logout', { method: 'POST' });
     } catch {
-      // Token may already be invalid — clear local state regardless.
+      // Token may already be invalid: clear local state regardless.
     }
     setToken(null);
     setUser(null);

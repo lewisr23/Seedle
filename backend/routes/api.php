@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Public browsing — products, plant reference data, and the explore feed
+// Public browsing: products, plant reference data, and the explore feed
 // don't require an account, same as any real storefront.
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
