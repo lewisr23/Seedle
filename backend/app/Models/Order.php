@@ -8,14 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['buyer_id', 'status', 'total_pence'])]
+#[Fillable(['buyer_id', 'status'])]
 class Order extends Model
 {
     protected function casts(): array
     {
         return [
             'status' => OrderStatus::class,
-            'total_pence' => 'integer',
         ];
     }
 

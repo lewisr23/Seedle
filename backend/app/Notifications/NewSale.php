@@ -28,7 +28,6 @@ class NewSale extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
-        $total = $this->items->sum(fn ($item) => $item->unit_price_pence * $item->quantity);
         $first = $this->items->first();
         $extra = $this->items->count() - 1;
 
@@ -38,7 +37,6 @@ class NewSale extends Notification implements ShouldQueue
             'body' => $extra > 0
                 ? "{$first->quantity} × {$first->product?->title} and {$extra} more item(s)"
                 : "{$first->quantity} × {$first->product?->title}",
-            'amount_pence' => $total,
             'order_id' => $this->order->id,
             'link' => '/dashboard',
         ];

@@ -1,22 +1,22 @@
 # GrowGuide
 
-A social marketplace and planning tool for gardeners: buy and sell seeds, plants and tools, post updates and questions, follow other gardeners, and get help figuring out what to plant, when, and what not to plant next to it.
+A gardening community and planning tool: pass on spare seeds, cuttings and tools to other growers, post updates and questions, follow other gardeners, and get help figuring out what to plant, when, and what not to plant next to it. Nothing is bought or sold, everything is swapped or given away.
 
 ## Features
 
-- **Marketplace**: search seeds/plants/tools/fertiliser by text, category, price, sun requirement, hardiness zone and stock, with price sorting and faceted counts, backed by Elasticsearch
+- **Swap shelf**: search what people are offering by text, category, sun requirement, hardiness zone and availability, with faceted counts and a top-rated sort, backed by Elasticsearch
 - **Plant library**: care details, hardiness ranges, planting calendar and companion relationships for every plant, filterable by type, sun, water, zone and planting month
 - **Garden planner**: create beds, add plants, and get warned when you add something that fights with what's already there (real companion-planting data: tomatoes next to potatoes gets flagged, tomatoes next to basil doesn't)
 - **"What can I plant right now?"**: recommendations filtered by hardiness zone and the current month
 - **Guides**: 15 written guides across getting-started, soil, watering, pests, seasonal jobs, tools and composting, filterable by category and linked to specific plants where relevant
 - **Social feed**: post updates, questions and tips, follow other gardeners, like and comment, pin your own posts to the top of your profile, with suggested gardeners to follow
-- **Listing photos**: sellers upload images when creating a listing; they show on cards and the product page, with the category emoji as a fallback for listings without one
-- **Saved items**: heart any listing or plant to keep it on a saved page; saving an out-of-stock listing gets you a notification when the seller restocks it (only on the genuine 0 → in-stock transition, and not while the listing is paused)
-- **Messaging**: buyers can ask a seller about a listing from the product page; one thread per buyer/listing pair so asking twice continues the conversation rather than forking it, with unread counts in the navbar, the other party notified through the queue, and an open thread polling so a reply appears without a refresh
+- **Listing photos**: growers upload images when offering something; they show on cards and the product page, with the category emoji as a fallback for listings without one
+- **Saved items**: heart any listing or plant to keep it on a saved page; saving something that has run out gets you a notification when the grower puts more up (only on the genuine 0 → in-stock transition, and not while the listing is paused)
+- **Messaging**: you can ask a grower about anything they are offering; one thread per person and listing so asking twice continues the conversation rather than forking it, with unread counts in the navbar, the other party notified through the queue, and an open thread polling so a reply appears without a refresh
 - **Notifications**: database-backed notifications for sales, new followers, comments and order status, delivered through the queue and surfaced in a navbar bell
-- **Reviews**: star ratings and written reviews, restricted to verified buyers (you can only review something you actually ordered, and never your own listing), feeding an average rating into product cards and a "top rated" sort
-- **Seller dashboard**: manage your own listings (inline price/stock edits, pause/resume, delete) and see orders containing your products, with revenue totals
-- **Checkout**: multi-seller cart with an async order fulfilment pipeline
+- **Reviews**: star ratings and written notes on how a swap went, restricted to people who actually claimed the item, and never your own listing, feeding an average into the cards and a "top rated" sort
+- **Your patch**: manage what you have put up (inline availability edits, pause/resume, delete) and see who has claimed what
+- **Claiming**: a swap list spanning several growers, with an async fulfilment pipeline behind it
 
 ## Stack
 
@@ -28,7 +28,7 @@ A social marketplace and planning tool for gardeners: buy and sell seeds, plants
 ## Architecture
 
 ```
-backend/    Laravel 13 API: auth, marketplace, garden logic, orders, social graph
+backend/    Laravel 13 API: auth, swap shelf, garden logic, claims, social graph
 frontend/   React + Vite SPA: talks to the API over fetch + Sanctum bearer tokens
 docker/     nginx config for the containerised backend
 docker-compose.yml   mysql, redis, elasticsearch, php-fpm, queue worker, nginx, frontend
@@ -40,10 +40,10 @@ The frontend and backend are fully decoupled: the API doesn't know about the SPA
 
 Checkout (`CheckoutService::placeOrder`, [backend/app/Services/Orders/CheckoutService.php](backend/app/Services/Orders/CheckoutService.php)) splits into two phases:
 
-1. **Synchronous, inside a DB transaction**: lock each product row (`lockForUpdate`), check stock, decrement it, write the order and its line items. This is the only part that has to be strongly consistent: it's what stops two simultaneous buyers overselling the last unit.
-2. **Asynchronous, dispatched only after the transaction commits** (to avoid a queue worker picking up a job before the row it depends on actually exists): an `OrderPlaced` event fans out to three independent queued listeners (buyer confirmation, seller notification, search-index refresh), plus a separately queued `CompleteOrderJob` that simulates fulfilment and moves the order from `processing` to `completed`.
+1. **Synchronous, inside a DB transaction**: lock each product row (`lockForUpdate`), check stock, decrement it, write the order and its line items. This is the only part that has to be strongly consistent: it's what stops two people simultaneously claiming the last packet. No money changes hands, but the race is exactly the one a shop has.
+2. **Asynchronous, dispatched only after the transaction commits** (to avoid a queue worker picking up a job before the row it depends on actually exists): an `OrderPlaced` event fans out to three independent queued listeners (claimant confirmation, grower notification, search-index refresh), plus a separately queued `CompleteOrderJob` that simulates fulfilment and moves the order from `processing` to `completed`.
 
-Those listeners send real database notifications rather than writing to a log, so the async pipeline is visible in the UI: place an order and the seller's notification bell updates once a worker picks the job up.
+Those listeners send real database notifications rather than writing to a log, so the async pipeline is visible in the UI: claim something and the grower's notification bell updates once a worker picks the job up.
 
 In `docker-compose.yml` the queue worker is its own container, so it scales independently of the web tier (`docker compose up -d --scale queue-worker=3`): fulfilment throughput isn't coupled to request throughput.
 
@@ -86,7 +86,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open http://localhost:5173. The marketplace, garden planner and social feed all work immediately. Elasticsearch-backed search falls back to a MySQL/SQLite query if no cluster is running (a small banner on the marketplace page says so). Everything still works, just without facet counts.
+Open http://localhost:5173. The swap shelf, garden planner and social feed all work immediately. Elasticsearch-backed search falls back to a MySQL/SQLite query if no cluster is running (a small banner on the swap shelf says so). Everything still works, just without facet counts.
 
 To get real search, either run Elasticsearch separately and point `ELASTICSEARCH_HOST` at it, or use Docker (below).
 
@@ -130,7 +130,7 @@ cd backend
 php artisan test
 ```
 
-98 tests covering auth, checkout (including insufficient-stock and multi-seller-split cases), product search filters and sorting, reviews and the verified-buyer rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases), and listing images (type and size validation, generated filenames, unauthenticated serving, and refusing to serve anything outside the upload directory).
+95 tests covering auth, claiming (including insufficient-stock and multi-seller-split cases), search filters and sorting, reviews and the verified-claimant rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases), and listing images (type and size validation, generated filenames, unauthenticated serving, and refusing to serve anything outside the upload directory).
 
 To run them inside the container instead, pass the test environment as real environment variables:
 
@@ -147,7 +147,7 @@ cd frontend
 npm test
 ```
 
-96 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the cart context (quantity merging, integer-pence totals, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the checkout flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (out-of-stock handling, ratings appearing only once reviewed, its save toggle, and photo-versus-emoji fallback).
+95 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the swap list context (quantity merging, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the claim flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (sold-out handling, ratings appearing only once reviewed, its save toggle, and photo-versus-emoji fallback).
 
 Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove", so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 

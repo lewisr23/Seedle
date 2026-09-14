@@ -14,13 +14,10 @@ class OrderResource extends JsonResource
         return [
             'id' => $this->id,
             'status' => $this->status->value,
-            'total_pence' => $this->total_pence,
-            'total_pounds' => round($this->total_pence / 100, 2),
             'buyer' => new UserResource($this->whenLoaded('buyer')),
             'items' => $this->whenLoaded('items', fn () => $this->items->map(fn ($item) => [
                 'id' => $item->id,
                 'quantity' => $item->quantity,
-                'unit_price_pence' => $item->unit_price_pence,
                 'product' => new ProductResource($item->product),
                 'seller' => new UserResource($item->seller),
             ])),

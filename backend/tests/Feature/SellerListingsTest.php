@@ -50,10 +50,10 @@ class SellerListingsTest extends TestCase
     public function test_a_seller_can_update_their_own_listing(): void
     {
         $seller = User::factory()->create();
-        $product = Product::factory()->for($seller, 'seller')->create(['price_pence' => 500, 'stock' => 2]);
+        $product = Product::factory()->for($seller, 'seller')->create(['stock' => 2, 'title' => 'Old title']);
 
         $response = $this->actingAs($seller, 'sanctum')->putJson("/api/products/{$product->id}", [
-            'price_pence' => 750,
+            'title' => 'New title',
             'stock' => 9,
             'is_active' => false,
         ]);
@@ -61,7 +61,7 @@ class SellerListingsTest extends TestCase
         $response->assertOk();
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
-            'price_pence' => 750,
+            'title' => 'New title',
             'stock' => 9,
             'is_active' => false,
         ]);
@@ -71,14 +71,14 @@ class SellerListingsTest extends TestCase
     {
         $seller = User::factory()->create();
         $intruder = User::factory()->create();
-        $product = Product::factory()->for($seller, 'seller')->create(['price_pence' => 500]);
+        $product = Product::factory()->for($seller, 'seller')->create(['title' => 'Untouched']);
 
         $response = $this->actingAs($intruder, 'sanctum')->putJson("/api/products/{$product->id}", [
-            'price_pence' => 1,
+            'title' => 'Hijacked',
         ]);
 
         $response->assertForbidden();
-        $this->assertDatabaseHas('products', ['id' => $product->id, 'price_pence' => 500]);
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'title' => 'Untouched']);
     }
 
     public function test_sales_endpoint_returns_orders_containing_the_sellers_products(): void
@@ -87,8 +87,8 @@ class SellerListingsTest extends TestCase
         $otherSeller = User::factory()->create();
         $buyer = User::factory()->create();
 
-        $mine = Product::factory()->for($seller, 'seller')->create(['stock' => 10, 'price_pence' => 300]);
-        $theirs = Product::factory()->for($otherSeller, 'seller')->create(['stock' => 10, 'price_pence' => 400]);
+        $mine = Product::factory()->for($seller, 'seller')->create(['stock' => 10]);
+        $theirs = Product::factory()->for($otherSeller, 'seller')->create(['stock' => 10]);
 
         $this->actingAs($buyer, 'sanctum')->postJson('/api/checkout', [
             'items' => [['product_id' => $mine->id, 'quantity' => 1]],

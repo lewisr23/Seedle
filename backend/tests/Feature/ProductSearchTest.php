@@ -44,19 +44,6 @@ class ProductSearchTest extends TestCase
         $this->assertEquals(['tool'], $categories->values()->all());
     }
 
-    public function test_product_search_filters_by_price_range(): void
-    {
-        Product::factory()->create(['price_pence' => 100, 'is_active' => true]);
-        Product::factory()->create(['price_pence' => 5000, 'is_active' => true]);
-
-        $response = $this->getJson('/api/products?min_price=500&max_price=6000');
-
-        $response->assertOk();
-        $prices = collect($response->json('data'))->pluck('price_pence');
-
-        $this->assertTrue($prices->every(fn ($p) => $p >= 500 && $p <= 6000));
-    }
-
     public function test_product_search_matches_title_text(): void
     {
         Product::factory()->create(['title' => 'Stainless Steel Trowel', 'is_active' => true]);
@@ -100,31 +87,5 @@ class ProductSearchTest extends TestCase
 
         $this->assertTrue($titles->contains('In Stock Tool'));
         $this->assertFalse($titles->contains('Out Of Stock Tool'));
-    }
-
-    public function test_product_search_can_sort_by_price_ascending(): void
-    {
-        Product::factory()->create(['title' => 'Pricier', 'price_pence' => 5000, 'is_active' => true]);
-        Product::factory()->create(['title' => 'Cheaper', 'price_pence' => 500, 'is_active' => true]);
-
-        $response = $this->getJson('/api/products?sort=price_asc');
-
-        $response->assertOk();
-        $titles = collect($response->json('data'))->pluck('title');
-
-        $this->assertEquals('Cheaper', $titles->first());
-    }
-
-    public function test_product_search_can_sort_by_price_descending(): void
-    {
-        Product::factory()->create(['title' => 'Pricier', 'price_pence' => 5000, 'is_active' => true]);
-        Product::factory()->create(['title' => 'Cheaper', 'price_pence' => 500, 'is_active' => true]);
-
-        $response = $this->getJson('/api/products?sort=price_desc');
-
-        $response->assertOk();
-        $titles = collect($response->json('data'))->pluck('title');
-
-        $this->assertEquals('Pricier', $titles->first());
     }
 }

@@ -79,10 +79,9 @@ export default function ProductDetail() {
           <p style={{ color: 'var(--ink-500)' }}>{product.description}</p>
 
           <p style={{ fontSize: 26, fontWeight: 800, color: 'var(--green-700)', fontFamily: 'var(--font-heading)' }}>
-            £{product.price_pounds?.toFixed(2)}
           </p>
           <p style={{ fontSize: 14 }}>
-            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'} · sold by{' '}
+            {product.stock > 0 ? `${product.stock} available` : 'All gone'} · offered by{' '}
             <Link to={`/u/${product.seller?.username}`}>{product.seller?.username}</Link>
           </p>
 
@@ -119,7 +118,7 @@ export default function ProductDetail() {
                   setTimeout(() => setAdded(false), 1500);
                 }}
               >
-                Add to cart
+                Add to swap list
               </button>
               {added && <span className="alert alert--success" style={{ padding: '7px 12px', margin: 0 }}>Added!</span>}
             </div>

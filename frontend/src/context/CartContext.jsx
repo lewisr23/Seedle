@@ -45,16 +45,11 @@ export function CartProvider({ children }) {
 
   const clear = useCallback(() => setItems([]), []);
 
-  const totalPence = useMemo(
-    () => items.reduce((sum, i) => sum + i.product.price_pence * i.quantity, 0),
-    [items]
-  );
-
   const totalItems = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, updateQuantity, removeItem, clear, totalPence, totalItems }}
+      value={{ items, addItem, updateQuantity, removeItem, clear, totalItems }}
     >
       {children}
     </CartContext.Provider>

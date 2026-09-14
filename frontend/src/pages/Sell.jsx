@@ -18,7 +18,6 @@ export default function Sell() {
     description: '',
     category: 'seed',
     plant_id: '',
-    price: '',
     stock: '1',
   });
   const [errors, setErrors] = useState({});
@@ -48,7 +47,6 @@ export default function Sell() {
           description: form.description,
           category: form.category,
           plant_id: form.plant_id || null,
-          price_pence: Math.round(Number(form.price) * 100),
           stock: Number(form.stock),
           images: images.map((image) => image.path),
         },
@@ -97,8 +95,8 @@ export default function Sell() {
 
   return (
     <div className="page container">
-      <h1 className="page-title">List something for sale</h1>
-      <p className="page-subtitle">Seeds, plants, tools or fertilizer: set your own price.</p>
+      <h1 className="page-title">Offer something</h1>
+      <p className="page-subtitle">Spare seeds, cuttings, split perennials or a tool you no longer need.</p>
 
       {error && <div className="alert alert--error">{error}</div>}
 
@@ -181,9 +179,6 @@ export default function Sell() {
           </div>
         )}
         <div className="field">
-          <label>Price (£)</label>
-          <input type="number" min="0.01" step="0.01" value={form.price} onChange={update('price')} required />
-          {errors.price_pence && <span className="error-text">{errors.price_pence[0]}</span>}
         </div>
         <div className="field">
           <label>Stock</label>

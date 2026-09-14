@@ -24,14 +24,12 @@ class CheckoutService
             $order = Order::create([
                 'buyer_id' => $buyer->id,
                 'status' => OrderStatus::Pending,
-                'total_pence' => 0,
             ]);
 
-            $total = 0;
-
             foreach ($items as $item) {
-                // Lock the row so two simultaneous checkouts can't both
-                // oversell the last unit of stock.
+                // Lock the row so two simultaneous claims can't both take
+                // the last unit. No money changes hands, but the race is the
+                // same one a shop has.
                 $product = Product::where('id', $item['product_id'])->lockForUpdate()->firstOrFail();
 
                 if ($product->stock < $item['quantity']) {
@@ -44,16 +42,10 @@ class CheckoutService
                     'product_id' => $product->id,
                     'seller_id' => $product->seller_id,
                     'quantity' => $item['quantity'],
-                    'unit_price_pence' => $product->price_pence,
                 ]);
-
-                $total += $product->price_pence * $item['quantity'];
             }
 
-            $order->update([
-                'status' => OrderStatus::Processing,
-                'total_pence' => $total,
-            ]);
+            $order->update(['status' => OrderStatus::Processing]);
 
             $order->load('items.product', 'items.seller');
 

@@ -7,7 +7,7 @@ export default function Footer() {
           <a href="/plants">Plants</a>
           <a href="/guides">Guides</a>
           <a href="/feed">Community</a>
-          <a href="/">Marketplace</a>
+          <a href="/">Swap shelf</a>
         </div>
       </div>
     </footer>

@@ -85,7 +85,6 @@ class DemoDataSeeder extends Seeder
                 'slug' => Str::slug($title).'-'.$i,
                 'description' => 'A quality '.$category->value.' listing for the garden marketplace.',
                 'category' => $category->value,
-                'price_pence' => random_int(150, 6000),
                 'stock' => random_int(0, 250),
                 'images' => json_encode([]),
                 'is_active' => random_int(1, 100) <= 92 ? 1 : 0,
@@ -250,7 +249,7 @@ class DemoDataSeeder extends Seeder
     private function seedOrders(array $userIds): void
     {
         $now = now();
-        $products = DB::table('products')->inRandomOrder()->limit(500)->get(['id', 'seller_id', 'price_pence']);
+        $products = DB::table('products')->inRandomOrder()->limit(500)->get(['id', 'seller_id']);
 
         if ($products->isEmpty()) {
             return;
@@ -262,11 +261,9 @@ class DemoDataSeeder extends Seeder
             $items = $products->random(min($itemCount, $products->count()));
             $items = $items instanceof Collection ? $items : collect([$items]);
 
-            $total = 0;
             $orderId = DB::table('orders')->insertGetId([
                 'buyer_id' => $buyerId,
                 'status' => OrderStatus::Completed->value,
-                'total_pence' => 0,
                 'created_at' => $now->copy()->subDays(random_int(0, 200)),
                 'updated_at' => $now,
             ]);
@@ -274,22 +271,17 @@ class DemoDataSeeder extends Seeder
             $itemRows = [];
             foreach ($items as $product) {
                 $qty = random_int(1, 3);
-                $lineTotal = $qty * $product->price_pence;
-                $total += $lineTotal;
-
                 $itemRows[] = [
                     'order_id' => $orderId,
                     'product_id' => $product->id,
                     'seller_id' => $product->seller_id,
                     'quantity' => $qty,
-                    'unit_price_pence' => $product->price_pence,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
             }
 
             DB::table('order_items')->insert($itemRows);
-            DB::table('orders')->where('id', $orderId)->update(['total_pence' => $total]);
         }
     }
 

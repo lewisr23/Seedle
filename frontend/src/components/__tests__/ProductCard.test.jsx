@@ -18,7 +18,6 @@ const product = (extra = {}) => ({
   id: 4,
   title: 'Tomato seeds',
   category: 'seed',
-  price_pounds: 3.5,
   stock: 6,
   seller: { id: 2, username: 'daphne' },
   reviews_count: 0,
@@ -37,20 +36,19 @@ function renderCard(p = product(), onAddToCart) {
 beforeEach(() => toggle.mockReset());
 
 describe('what the card shows', () => {
-  it('shows title, price, stock and seller, and links to the listing', () => {
+  it('shows title, availability and who is offering it, and links to the listing', () => {
     renderCard();
 
     expect(screen.getByText('Tomato seeds')).toBeInTheDocument();
-    expect(screen.getByText('£3.50')).toBeInTheDocument();
-    expect(screen.getByText(/6 in stock/)).toBeInTheDocument();
+    expect(screen.getByText(/6 available/)).toBeInTheDocument();
     expect(screen.getByText(/daphne/)).toBeInTheDocument();
     expect(screen.getAllByRole('link')[0]).toHaveAttribute('href', '/products/4');
   });
 
-  it('says out of stock rather than "0 in stock"', () => {
+  it('says all gone rather than "0 available"', () => {
     renderCard(product({ stock: 0 }));
 
-    expect(screen.getByText(/out of stock/i)).toBeInTheDocument();
+    expect(screen.getByText(/all gone/i)).toBeInTheDocument();
   });
 
   it('hides the rating until there is at least one review', () => {
@@ -98,21 +96,21 @@ describe('adding to the cart', () => {
     const onAddToCart = vi.fn();
     renderCard(product(), onAddToCart);
 
-    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Request' }));
 
     expect(onAddToCart).toHaveBeenCalledWith(expect.objectContaining({ id: 4 }));
   });
 
-  it('disables Add when there is nothing to sell', () => {
+  it('disables the request button when there is nothing left', () => {
     renderCard(product({ stock: 0 }));
 
-    expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Request' })).toBeDisabled();
   });
 
   it('does not blow up when no handler is passed', async () => {
     renderCard();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Add' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Request' }));
 
     expect(screen.getByText('Tomato seeds')).toBeInTheDocument();
   });

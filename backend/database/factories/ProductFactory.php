@@ -44,7 +44,6 @@ class ProductFactory extends Factory
             'slug' => Str::slug($title).'-'.fake()->unique()->numberBetween(10000, 999999),
             'description' => fake()->sentence(20),
             'category' => $category,
-            'price_pence' => fake()->numberBetween(150, 4500),
             'stock' => fake()->numberBetween(0, 200),
             'images' => [],
             'is_active' => fake()->boolean(92),

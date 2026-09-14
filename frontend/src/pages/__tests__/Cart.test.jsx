@@ -24,11 +24,9 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => navigate };
 });
 
-const product = (id, price_pence, extra = {}) => ({
+const product = (id, extra = {}) => ({
   id,
   title: `Product ${id}`,
-  price_pence,
-  price_pounds: price_pence / 100,
   stock: 10,
   ...extra,
 });
@@ -54,43 +52,40 @@ beforeEach(() => {
 });
 
 describe('empty state', () => {
-  it('invites the user to browse when the cart is empty', () => {
+  it('invites the user to browse when the list is empty', () => {
     renderCart();
 
-    expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /checkout/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/nothing on your list yet/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /request these/i })).not.toBeInTheDocument();
   });
 });
 
 describe('line items', () => {
-  it('lists each product with its line total and a cart total', () => {
+  it('lists every product on the list', () => {
     seedCart([
-      { product: product(1, 500), quantity: 2 },
-      { product: product(2, 250), quantity: 1 },
+      { product: product(1), quantity: 2 },
+      { product: product(2), quantity: 1 },
     ]);
 
     renderCart();
 
     expect(screen.getByText('Product 1')).toBeInTheDocument();
     expect(screen.getByText('Product 2')).toBeInTheDocument();
-    expect(screen.getByText('£10.00')).toBeInTheDocument(); // 2 x £5.00
-    expect(screen.getByText('£2.50')).toBeInTheDocument();
-    expect(screen.getByText(/Total: £12\.50/)).toBeInTheDocument();
   });
 
-  it('recalculates the total when a quantity changes', async () => {
-    seedCart([{ product: product(1, 500), quantity: 1 }]);
+  it('keeps the typed quantity', async () => {
+    seedCart([{ product: product(1), quantity: 1 }]);
     renderCart();
 
     const qty = screen.getByRole('spinbutton');
     await userEvent.clear(qty);
     await userEvent.type(qty, '3');
 
-    await waitFor(() => expect(screen.getByText(/Total: £15\.00/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('spinbutton')).toHaveValue(3));
   });
 
   it('keeps the line when the quantity field is cleared mid-edit', async () => {
-    seedCart([{ product: product(1, 500), quantity: 2 }]);
+    seedCart([{ product: product(1), quantity: 2 }]);
     renderCart();
 
     // Select-all-then-delete is how people retype a number. Number('') is 0,
@@ -104,7 +99,7 @@ describe('line items', () => {
   });
 
   it('restores the committed quantity if the field is left empty on blur', async () => {
-    seedCart([{ product: product(1, 500), quantity: 2 }]);
+    seedCart([{ product: product(1), quantity: 2 }]);
     renderCart();
 
     const qty = screen.getByRole('spinbutton');
@@ -112,13 +107,12 @@ describe('line items', () => {
     await userEvent.tab();
 
     expect(qty).toHaveValue(2);
-    expect(screen.getByText(/Total: £10\.00/)).toBeInTheDocument();
   });
 
   it('drops a line when Remove is clicked', async () => {
     seedCart([
-      { product: product(1, 500), quantity: 1 },
-      { product: product(2, 250), quantity: 1 },
+      { product: product(1), quantity: 1 },
+      { product: product(2), quantity: 1 },
     ]);
     renderCart();
 
@@ -130,17 +124,17 @@ describe('line items', () => {
 });
 
 describe('checkout', () => {
-  it('posts every line and confirms the order, then empties the cart', async () => {
+  it('posts every line and confirms the swap, then empties the list', async () => {
     seedCart([
-      { product: product(1, 500), quantity: 2 },
-      { product: product(2, 250), quantity: 1 },
+      { product: product(1), quantity: 2 },
+      { product: product(2), quantity: 1 },
     ]);
-    vi.mocked(api).mockResolvedValue({ data: { id: 42, total_pounds: 12.5 } });
+    vi.mocked(api).mockResolvedValue({ data: { id: 42 } });
 
     renderCart();
-    await userEvent.click(screen.getByRole('button', { name: /^checkout$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /request these/i }));
 
-    await waitFor(() => expect(screen.getByText(/Order #42 placed/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Swap #42 requested/)).toBeInTheDocument());
 
     expect(api).toHaveBeenCalledWith('/checkout', {
       method: 'POST',
@@ -154,35 +148,35 @@ describe('checkout', () => {
     expect(JSON.parse(localStorage.getItem('growguide_cart'))).toEqual([]);
   });
 
-  it('shows the server message when stock ran out, and keeps the cart intact', async () => {
-    seedCart([{ product: product(1, 500), quantity: 2 }]);
+  it('shows the server message when stock ran out, and keeps the list intact', async () => {
+    seedCart([{ product: product(1), quantity: 2 }]);
     vi.mocked(api).mockRejectedValue(
       new ApiError('Not enough stock for Product 1.', 422, null)
     );
 
     renderCart();
-    await userEvent.click(screen.getByRole('button', { name: /^checkout$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /request these/i }));
 
     await waitFor(() =>
       expect(screen.getByText('Not enough stock for Product 1.')).toBeInTheDocument()
     );
-    // The cart must survive a failed checkout or the user loses their basket.
+    // The list must survive a failed request or the user loses it.
     expect(JSON.parse(localStorage.getItem('growguide_cart'))).toHaveLength(1);
   });
 
   it('falls back to a generic message for a non-API failure', async () => {
-    seedCart([{ product: product(1, 500), quantity: 1 }]);
+    seedCart([{ product: product(1), quantity: 1 }]);
     vi.mocked(api).mockRejectedValue(new TypeError('Failed to fetch'));
 
     renderCart();
-    await userEvent.click(screen.getByRole('button', { name: /^checkout$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /request these/i }));
 
-    await waitFor(() => expect(screen.getByText('Checkout failed.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Could not request those.')).toBeInTheDocument());
   });
 
-  it('sends a signed-out visitor to log in instead of checking out', async () => {
+  it('sends a signed-out visitor to log in instead of requesting', async () => {
     mockUser.mockReturnValue(null);
-    seedCart([{ product: product(1, 500), quantity: 1 }]);
+    seedCart([{ product: product(1), quantity: 1 }]);
 
     renderCart();
     await userEvent.click(screen.getByRole('button', { name: /log in to checkout/i }));

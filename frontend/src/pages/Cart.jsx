@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { api, ApiError } from '../api/client';
 
 export default function Cart() {
-  const { items, updateQuantity, removeItem, clear, totalPence } = useCart();
+  const { items, updateQuantity, removeItem, clear } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
@@ -23,7 +23,7 @@ export default function Cart() {
       setPlacedOrder(res.data);
       clear();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Checkout failed.');
+      setError(err instanceof ApiError ? err.message : 'Could not request those.');
     } finally {
       setBusy(false);
     }
@@ -33,8 +33,8 @@ export default function Cart() {
     return (
       <div className="page container">
         <div className="alert alert--success">
-          Order #{placedOrder.id} placed: total £{placedOrder.total_pounds.toFixed(2)}. It's now being processed;
-          you can check its status any time on your <Link to="/orders">orders page</Link>.
+          Swap #{placedOrder.id} requested. The growers offering these have been told;
+          you can follow it on your <Link to="/orders">swaps page</Link>.
         </div>
       </div>
     );
@@ -43,9 +43,9 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="page container">
-        <h1 className="page-title">Your cart</h1>
+        <h1 className="page-title">Your swap list</h1>
         <div className="empty-state">
-          Your cart is empty. <Link to="/">Browse the marketplace</Link>.
+          Nothing on your list yet. <Link to="/">See what people are offering</Link>.
         </div>
       </div>
     );
@@ -53,7 +53,7 @@ export default function Cart() {
 
   return (
     <div className="page container">
-      <h1 className="page-title">Your cart</h1>
+      <h1 className="page-title">Your swap list</h1>
 
       {error && <div className="alert alert--error">{error}</div>}
 
@@ -68,10 +68,9 @@ export default function Cart() {
         ))}
 
         <div className="flex-between" style={{ marginTop: 16 }}>
-          <strong>Total: £{(totalPence / 100).toFixed(2)}</strong>
           {user ? (
             <button className="btn" onClick={checkout} disabled={busy}>
-              {busy ? 'Placing order...' : 'Checkout'}
+              {busy ? 'Requesting...' : 'Request these'}
             </button>
           ) : (
             <button className="btn" onClick={() => navigate('/login', { state: { from: { pathname: '/cart' } } })}>
@@ -85,7 +84,7 @@ export default function Cart() {
 }
 
 /**
- * One cart row. The quantity field keeps its own draft string so it can be
+ * One row of the swap list. The quantity field keeps its own draft string so it can be
  * empty while the user retypes a number: committing "" straight to the cart
  * would read as Number('') === 0, which updateQuantity treats as "remove",
  * and the line would vanish mid-edit. Deleting a line is what Remove is for.
@@ -106,7 +105,6 @@ function CartLine({ item, updateQuantity, removeItem }) {
           <strong>{item.product.title}</strong>
         </Link>
         <div style={{ fontSize: 13, color: 'var(--ink-500)' }}>
-          £{item.product.price_pounds.toFixed(2)} each
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -123,9 +121,6 @@ function CartLine({ item, updateQuantity, removeItem }) {
           onBlur={() => setDraft(null)}
           style={{ width: 60, padding: '7px 9px', borderRadius: 8, border: '1.5px solid var(--sand-dark)' }}
         />
-        <span style={{ width: 70, textAlign: 'right' }}>
-          £{((item.product.price_pence * item.quantity) / 100).toFixed(2)}
-        </span>
         <button className="btn btn--ghost" onClick={() => removeItem(item.product.id)}>
           Remove
         </button>

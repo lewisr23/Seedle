@@ -7,7 +7,7 @@ import MessagesLink from './MessagesLink';
 import NotificationBell from './NotificationBell';
 
 const LINKS = [
-  { to: '/', label: 'Marketplace', end: true },
+  { to: '/', label: 'Swap shelf', end: true },
   { to: '/plants', label: 'Plants' },
   { to: '/guides', label: 'Guides' },
   { to: '/garden', label: 'Garden Planner' },
@@ -45,7 +45,7 @@ export default function Navbar() {
           ))}
           {user && (
             <NavLink to="/dashboard" className={({ isActive }) => `navbar__link${isActive ? ' active' : ''}`}>
-              Sell
+              Offer
             </NavLink>
           )}
         </div>

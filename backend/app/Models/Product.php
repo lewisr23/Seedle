@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 #[Fillable([
     'seller_id', 'plant_id', 'title', 'slug', 'description', 'category',
-    'price_pence', 'stock', 'images', 'is_active',
+    'stock', 'images', 'is_active',
 ])]
 class Product extends Model
 {
@@ -26,7 +26,6 @@ class Product extends Model
             'category' => ProductCategory::class,
             'images' => 'array',
             'is_active' => 'boolean',
-            'price_pence' => 'integer',
             'stock' => 'integer',
         ];
     }
@@ -63,11 +62,6 @@ class Product extends Model
         );
     }
 
-    public function priceInPounds(): float
-    {
-        return round($this->price_pence / 100, 2);
-    }
-
     /**
      * Reviews are limited to people who actually bought the product, so a
      * rating can't be left by someone who never received the thing.
@@ -93,7 +87,6 @@ class Product extends Model
             'title' => $this->title,
             'description' => $this->description,
             'category' => $this->category->value,
-            'price_pence' => $this->price_pence,
             'stock' => $this->stock,
             'is_active' => $this->is_active,
             'seller_id' => $this->seller_id,

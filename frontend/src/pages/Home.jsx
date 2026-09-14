@@ -22,8 +22,6 @@ const SUN_OPTIONS = [
 const SORT_OPTIONS = [
   { value: '', label: 'Newest first' },
   { value: 'rating_desc', label: 'Top rated' },
-  { value: 'price_asc', label: 'Price: low to high' },
-  { value: 'price_desc', label: 'Price: high to low' },
 ];
 
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.filter((c) => c.value).map((c) => [c.value, c.label]));
@@ -31,8 +29,6 @@ const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.filter((c) => c.value).map
 const DEFAULT_FILTERS = {
   q: '',
   category: '',
-  minPrice: '',
-  maxPrice: '',
   sunRequirement: '',
   zone: '',
   inStock: false,
@@ -76,8 +72,6 @@ export default function Home() {
         params: {
           q: filters.q || undefined,
           category: filters.category || undefined,
-          min_price: filters.minPrice ? Math.round(filters.minPrice * 100) : undefined,
-          max_price: filters.maxPrice ? Math.round(filters.maxPrice * 100) : undefined,
           sun_requirement: filters.sunRequirement || undefined,
           zone: filters.zone || undefined,
           in_stock: filters.inStock ? 1 : undefined,
@@ -129,7 +123,7 @@ export default function Home() {
           </span>
           <h1>Grow something worth talking about</h1>
           <p>
-            Buy and sell seeds, plants and tools from fellow gardeners, get warned before you plant bad
+            Pass on spare seeds, cuttings and tools to other gardeners, get warned before you plant bad
             neighbours, and learn from guides written for people who'd rather be outside than reading manuals.
           </p>
           <form className="hero__search" onSubmit={submitHeroSearch}>
@@ -165,7 +159,7 @@ export default function Home() {
       <div id="marketplace-results">
         <div className="flex-between" style={{ marginBottom: 4 }}>
           <h2 className="section-title" style={{ marginBottom: 0 }}>
-            Marketplace
+            The swap shelf
           </h2>
           {result?.source === 'database' && (
             <span className="tag">search running on database fallback</span>
@@ -191,20 +185,6 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <input
-            type="number"
-            placeholder="Min £"
-            value={filters.minPrice}
-            onChange={(e) => setFilter('minPrice')(e.target.value)}
-            style={{ width: 90 }}
-          />
-          <input
-            type="number"
-            placeholder="Max £"
-            value={filters.maxPrice}
-            onChange={(e) => setFilter('maxPrice')(e.target.value)}
-            style={{ width: 90 }}
-          />
           <select value={filters.sort} onChange={(e) => setFilter('sort')(e.target.value)}>
             {SORT_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
@@ -299,7 +279,7 @@ export default function Home() {
                   <ProductCard product={p} onAddToCart={handleAdd} />
                   {added === p.id && (
                     <div className="alert alert--success" style={{ marginTop: 6, padding: '6px 10px' }}>
-                      Added to cart
+                      Added to your list
                     </div>
                   )}
                 </div>

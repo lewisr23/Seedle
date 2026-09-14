@@ -64,7 +64,7 @@ class NotificationTest extends TestCase
     {
         $seller = User::factory()->create();
         $buyer = User::factory()->create();
-        $product = Product::factory()->for($seller, 'seller')->create(['stock' => 5, 'price_pence' => 900]);
+        $product = Product::factory()->for($seller, 'seller')->create(['stock' => 5]);
 
         $this->actingAs($buyer, 'sanctum')->postJson('/api/checkout', [
             'items' => [['product_id' => $product->id, 'quantity' => 2]],
@@ -73,7 +73,7 @@ class NotificationTest extends TestCase
         $sellerNotifications = $seller->fresh()->notifications;
         $this->assertCount(1, $sellerNotifications);
         $this->assertEquals('new_sale', $sellerNotifications->first()->data['type']);
-        $this->assertEquals(1800, $sellerNotifications->first()->data['amount_pence']);
+        $this->assertArrayNotHasKey('amount_pence', $sellerNotifications->first()->data);
 
         // Buyer gets one for the order being placed and one when it completes.
         $this->assertTrue($buyer->fresh()->notifications->count() >= 1);

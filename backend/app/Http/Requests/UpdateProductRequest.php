@@ -20,7 +20,6 @@ class UpdateProductRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'category' => ['sometimes', new Enum(ProductCategory::class)],
             'plant_id' => ['nullable', 'integer', 'exists:plants,id'],
-            'price_pence' => ['sometimes', 'integer', 'min:1'],
             'stock' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
             'images' => ['sometimes', 'array'],

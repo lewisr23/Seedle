@@ -121,7 +121,7 @@ export default function PlantDetail() {
 
       {products.length > 0 && (
         <div className="section">
-          <h2 className="section-title">Buy {plant.name} in the marketplace</h2>
+          <h2 className="section-title">{plant.name} on the swap shelf</h2>
           <div className="grid">
             {products.map((p) => (
               <ProductCard key={p.id} product={p} onAddToCart={(prod) => addItem(prod, 1)} />

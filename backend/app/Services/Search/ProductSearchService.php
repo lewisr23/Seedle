@@ -25,7 +25,7 @@ class ProductSearchService
     }
 
     /**
-     * @param  array{q?: string, category?: string, sun_requirement?: string, zone?: int, min_price?: int, max_price?: int, seller_id?: int, plant_id?: int, in_stock?: bool, sort?: string}  $filters
+     * @param  array{q?: string, category?: string, sun_requirement?: string, zone?: int, seller_id?: int, plant_id?: int, in_stock?: bool, sort?: string}  $filters
      */
     public function search(array $filters, int $page = 1, int $perPage = 20): array
     {
@@ -74,17 +74,6 @@ class ProductSearchService
 
         if (! empty($filters['plant_id'])) {
             $filter[] = ['term' => ['plant_id' => (int) $filters['plant_id']]];
-        }
-
-        if (! empty($filters['min_price']) || ! empty($filters['max_price'])) {
-            $range = [];
-            if (! empty($filters['min_price'])) {
-                $range['gte'] = (int) $filters['min_price'];
-            }
-            if (! empty($filters['max_price'])) {
-                $range['lte'] = (int) $filters['max_price'];
-            }
-            $filter[] = ['range' => ['price_pence' => $range]];
         }
 
         if (! empty($filters['in_stock'])) {
@@ -142,8 +131,6 @@ class ProductSearchService
     private function esSortClause(array $filters): array
     {
         return match ($filters['sort'] ?? null) {
-            'price_asc' => [['price_pence' => 'asc']],
-            'price_desc' => [['price_pence' => 'desc']],
             'rating_desc' => [['rating_average' => ['order' => 'desc', 'missing' => '_last']]],
             default => empty($filters['q']) ? [['created_at' => 'desc']] : ['_score'],
         };
@@ -174,14 +161,6 @@ class ProductSearchService
             $query->where('plant_id', $filters['plant_id']);
         }
 
-        if (! empty($filters['min_price'])) {
-            $query->where('price_pence', '>=', (int) $filters['min_price']);
-        }
-
-        if (! empty($filters['max_price'])) {
-            $query->where('price_pence', '<=', (int) $filters['max_price']);
-        }
-
         if (! empty($filters['in_stock'])) {
             $query->where('stock', '>', 0);
         }
@@ -201,8 +180,6 @@ class ProductSearchService
         $total = (clone $query)->count();
 
         match ($filters['sort'] ?? null) {
-            'price_asc' => $query->orderBy('price_pence'),
-            'price_desc' => $query->orderByDesc('price_pence'),
             'rating_desc' => $query->orderByDesc('reviews_avg_rating'),
             default => $query->orderByDesc('created_at'),
         };
@@ -240,7 +217,6 @@ class ProductSearchService
                         'plant_type' => ['type' => 'keyword'],
                         'min_zone' => ['type' => 'integer'],
                         'max_zone' => ['type' => 'integer'],
-                        'price_pence' => ['type' => 'integer'],
                         'stock' => ['type' => 'integer'],
                         'rating_average' => ['type' => 'float'],
                         'reviews_count' => ['type' => 'integer'],

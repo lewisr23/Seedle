@@ -52,17 +52,16 @@ export default function ProductCard({ product, onAddToCart }) {
           </span>
         )}
         <span className="product-card__meta">
-          {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'} · sold by{' '}
+          {product.stock > 0 ? `${product.stock} available` : 'All gone'} · offered by{' '}
           {product.seller?.username}
         </span>
         <div className="product-card__footer">
-          <span className="product-card__price">£{product.price_pounds?.toFixed(2)}</span>
           <button
             className="btn btn--sm"
             disabled={product.stock <= 0}
             onClick={() => onAddToCart?.(product)}
           >
-            Add
+            Request
           </button>
         </div>
       </div>

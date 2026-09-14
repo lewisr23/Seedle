@@ -47,7 +47,7 @@ export default function Register() {
       <div className="auth-shell">
         <span className="eyebrow">Join in</span>
         <h1 className="page-title">Create your account</h1>
-        <p className="page-subtitle">A community of gardeners buying, selling and helping each other grow.</p>
+        <p className="page-subtitle">A community of gardeners sharing what they grow and helping each other along.</p>
 
         {error && <div className="alert alert--error">{error}</div>}
 

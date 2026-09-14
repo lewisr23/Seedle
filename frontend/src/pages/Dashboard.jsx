@@ -19,7 +19,6 @@ const STATUS_COLORS = {
 
 function ListingRow({ product, onChanged }) {
   const [editing, setEditing] = useState(false);
-  const [price, setPrice] = useState((product.price_pence / 100).toFixed(2));
   const [stock, setStock] = useState(String(product.stock));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +29,7 @@ function ListingRow({ product, onChanged }) {
     try {
       await api(`/products/${product.id}`, {
         method: 'PUT',
-        body: { price_pence: Math.round(Number(price) * 100), stock: Number(stock) },
+        body: { stock: Number(stock) },
       });
       setEditing(false);
       onChanged();
@@ -81,10 +80,6 @@ function ListingRow({ product, onChanged }) {
       {editing ? (
         <div className="listing-row__actions">
           <label className="inline-field">
-            £
-            <input type="number" step="0.01" min="0.01" value={price} onChange={(e) => setPrice(e.target.value)} />
-          </label>
-          <label className="inline-field">
             Stock
             <input type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} />
           </label>
@@ -97,8 +92,7 @@ function ListingRow({ product, onChanged }) {
         </div>
       ) : (
         <div className="listing-row__actions">
-          <span className="listing-row__price">£{product.price_pounds.toFixed(2)}</span>
-          <span className="listing-row__stock">{product.stock} in stock</span>
+          <span className="listing-row__stock">{product.stock} available</span>
           <button className="btn btn--outline btn--sm" onClick={() => setEditing(true)}>
             Edit
           </button>
@@ -128,17 +122,11 @@ export default function Dashboard() {
   }, []);
 
   const activeCount = listings?.filter((l) => l.is_active).length ?? 0;
-  const revenuePence =
-    sales?.reduce(
-      (sum, order) => sum + order.items.reduce((s, i) => s + i.unit_price_pence * i.quantity, 0),
-      0
-    ) ?? 0;
-
   return (
     <div className="page container">
-      <span className="eyebrow">Your shop</span>
-      <h1 className="page-title">Seller dashboard</h1>
-      <p className="page-subtitle">Manage what you're selling and see what's sold.</p>
+      <span className="eyebrow">Your patch</span>
+      <h1 className="page-title">What you're offering</h1>
+      <p className="page-subtitle">Manage what you've put up and see who has claimed it.</p>
 
       <div className="stat-row">
         <div className="stat-card">
@@ -151,11 +139,7 @@ export default function Dashboard() {
         </div>
         <div className="stat-card">
           <strong>{sales?.length ?? ': '}</strong>
-          <span>Orders</span>
-        </div>
-        <div className="stat-card">
-          <strong>{sales ? `£${(revenuePence / 100).toFixed(2)}` : ': '}</strong>
-          <span>Revenue</span>
+          <span>Claimed</span>
         </div>
       </div>
 
@@ -206,7 +190,7 @@ export default function Dashboard() {
           {sales?.map((order) => (
             <div className="card" key={order.id} style={{ padding: 18, marginBottom: 14 }}>
               <div className="flex-between">
-                <strong>Order #{order.id}</strong>
+                <strong>Swap #{order.id}</strong>
                 <span
                   style={{
                     color: STATUS_COLORS[order.status],
@@ -222,7 +206,7 @@ export default function Dashboard() {
                 {new Date(order.created_at).toLocaleString()}
                 {order.buyer && (
                   <>
-                    {' · bought by '}
+                    {' · claimed by '}
                     <Link to={`/u/${order.buyer.username}`}>{order.buyer.username}</Link>
                   </>
                 )}
@@ -231,9 +215,6 @@ export default function Dashboard() {
                 <div key={item.id} className="flex-between" style={{ fontSize: 14, padding: '3px 0' }}>
                   <span>
                     {item.quantity} × {item.product?.title}
-                  </span>
-                  <span style={{ fontWeight: 600 }}>
-                    £{((item.unit_price_pence * item.quantity) / 100).toFixed(2)}
                   </span>
                 </div>
               ))}

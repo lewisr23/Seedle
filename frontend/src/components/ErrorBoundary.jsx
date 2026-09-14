@@ -34,7 +34,7 @@ export default class ErrorBoundary extends Component {
               Try again
             </button>
             <a className="btn btn--outline" href="/">
-              Back to marketplace
+              Back to the swap shelf
             </a>
           </div>
           {import.meta.env.DEV && (

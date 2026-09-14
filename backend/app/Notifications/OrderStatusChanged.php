@@ -24,7 +24,6 @@ class OrderStatusChanged extends Notification implements ShouldQueue
             'type' => 'order_status',
             'title' => 'Order #'.$this->order->id.' '.$this->order->status->value,
             'body' => 'Your order is now '.$this->order->status->value.'.',
-            'amount_pence' => $this->order->total_pence,
             'order_id' => $this->order->id,
             'link' => '/orders',
         ];

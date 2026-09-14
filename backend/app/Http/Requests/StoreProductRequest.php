@@ -20,7 +20,6 @@ class StoreProductRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'category' => ['required', new Enum(ProductCategory::class)],
             'plant_id' => ['nullable', 'integer', 'exists:plants,id'],
-            'price_pence' => ['required', 'integer', 'min:1'],
             'stock' => ['required', 'integer', 'min:0'],
             'images' => ['sometimes', 'array'],
             'images.*' => ['string'],

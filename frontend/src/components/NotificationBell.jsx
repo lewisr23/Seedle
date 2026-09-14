@@ -98,9 +98,6 @@ export default function NotificationBell() {
                 <span>{n.body}</span>
                 <em>{timeAgo(n.created_at)}</em>
               </span>
-              {n.amount_pence != null && (
-                <span className="notif__amount">£{(n.amount_pence / 100).toFixed(2)}</span>
-              )}
             </button>
           ))}
         </div>
