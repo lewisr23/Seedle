@@ -17,7 +17,18 @@ use Throwable;
  */
 class ProductSearchService
 {
-    public function __construct(private readonly Client $client) {}
+    private ?Client $resolved = null;
+
+    /**
+     * Resolved on first use rather than injected, so a missing or malformed
+     * ELASTICSEARCH_HOST surfaces inside the guarded calls below and degrades
+     * to the database path. Injecting it would throw during construction,
+     * before any fallback could catch it, and take the whole app down.
+     */
+    private function client(): Client
+    {
+        return $this->resolved ??= app(Client::class);
+    }
 
     private function index(): string
     {
@@ -84,7 +95,7 @@ class ProductSearchService
             ? ['match_all' => new \stdClass]
             : ['bool' => array_filter(['must' => $must, 'filter' => $filter])];
 
-        $response = $this->client->search([
+        $response = $this->client()->search([
             'index' => $this->index(),
             'body' => [
                 'query' => $query,
@@ -201,11 +212,11 @@ class ProductSearchService
 
     public function ensureIndexExists(): void
     {
-        if ($this->client->indices()->exists(['index' => $this->index()])->asBool()) {
+        if ($this->client()->indices()->exists(['index' => $this->index()])->asBool()) {
             return;
         }
 
-        $this->client->indices()->create([
+        $this->client()->indices()->create([
             'index' => $this->index(),
             'body' => [
                 'mappings' => [
@@ -232,7 +243,7 @@ class ProductSearchService
     public function indexProduct(Product $product): void
     {
         try {
-            $this->client->index([
+            $this->client()->index([
                 'index' => $this->index(),
                 'id' => (string) $product->id,
                 'body' => $product->toSearchArray(),
@@ -248,7 +259,7 @@ class ProductSearchService
     public function deleteProduct(int $productId): void
     {
         try {
-            $this->client->delete(['index' => $this->index(), 'id' => (string) $productId]);
+            $this->client()->delete(['index' => $this->index(), 'id' => (string) $productId]);
         } catch (Throwable $e) {
             Log::warning('Failed to delete product from Elasticsearch.', [
                 'product_id' => $productId,
@@ -275,7 +286,7 @@ class ProductSearchService
             }
 
             if ($body) {
-                $this->client->bulk(['body' => $body]);
+                $this->client()->bulk(['body' => $body]);
             }
 
             $indexed += $products->count();

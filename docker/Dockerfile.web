@@ -1,0 +1,22 @@
+# Builds the SPA and bakes it into the Caddy image, so the production web
+# container serves static files with no Node runtime present.
+FROM node:22-alpine AS spa
+
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+
+COPY frontend/ ./
+# Baked in at build time: Vite inlines this, so the image is tied to the
+# domain it was built for.
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+RUN npm run build
+
+FROM caddy:2-alpine
+COPY --from=spa /app/dist /srv/spa
+# Laravel's front controller and public assets. Caddy needs these present to
+# resolve SCRIPT_FILENAME for php_fastcgi. Baked rather than shared through a
+# volume so it is rebuilt with the rest of the image and cannot go stale.
+COPY backend/public /var/www/html/public
+COPY docker/caddy/Caddyfile /etc/caddy/Caddyfile

@@ -1,0 +1,28 @@
+# TLS is automatic: Caddy obtains and renews a Let's Encrypt certificate for
+# APP_DOMAIN by itself, which is why there is no certbot in this stack.
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	# API and auth routes go to PHP. php_fastcgi sets the CGI variables Laravel
+	# needs; the PHP files themselves execute in the app container.
+	@backend path /api/* /sanctum/*
+	handle @backend {
+		root * /var/www/html/public
+		php_fastcgi app:9000
+	}
+
+	handle {
+		root * /srv/spa
+		# A client-side router owns every other path, so unknown URLs fall back
+		# to index.html rather than 404.
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+}

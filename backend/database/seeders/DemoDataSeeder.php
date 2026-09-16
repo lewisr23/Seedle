@@ -12,6 +12,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 /**
  * Seeds a realistically-sized dataset (thousands of products/posts) using
@@ -36,34 +37,44 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
-        $this->command->info('Seeding users...');
+        // Hard stop rather than a warning. This seeder invents users,
+        // listings, orders and conversations that never happened; shipping any
+        // of it to a live site would be passing fabricated activity off as
+        // real. Production starts empty and fills up with actual people.
+        if (app()->isProduction()) {
+            throw new RuntimeException(
+                'DemoDataSeeder must never run in production: it creates fabricated users and activity.'
+            );
+        }
+
+        $this->command?->info('Seeding users...');
         User::factory()->count(self::USER_COUNT)->create();
 
         $userIds = User::pluck('id')->all();
         $plantIds = Plant::pluck('id')->all();
 
-        $this->command->info('Seeding '.self::PRODUCT_COUNT.' products...');
+        $this->command?->info('Seeding '.self::PRODUCT_COUNT.' products...');
         $this->seedProducts($userIds, $plantIds);
 
-        $this->command->info('Seeding '.self::POST_COUNT.' posts...');
+        $this->command?->info('Seeding '.self::POST_COUNT.' posts...');
         $this->seedPosts($userIds, $plantIds);
 
-        $this->command->info('Seeding follows...');
+        $this->command?->info('Seeding follows...');
         $this->seedFollows($userIds);
 
-        $this->command->info('Seeding likes and comments...');
+        $this->command?->info('Seeding likes and comments...');
         $this->seedEngagement($userIds);
 
-        $this->command->info('Seeding saved items...');
+        $this->command?->info('Seeding saved items...');
         $this->seedSaves($userIds, $plantIds);
 
-        $this->command->info('Seeding conversations...');
+        $this->command?->info('Seeding conversations...');
         $this->seedConversations($userIds);
 
-        $this->command->info('Seeding '.self::ORDER_COUNT.' historical orders...');
+        $this->command?->info('Seeding '.self::ORDER_COUNT.' historical orders...');
         $this->seedOrders($userIds);
 
-        $this->command->info('Done.');
+        $this->command?->info('Done.');
     }
 
     private function seedProducts(array $userIds, array $plantIds): void

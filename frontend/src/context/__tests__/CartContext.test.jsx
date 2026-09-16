@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { CartProvider, useCart } from '../CartContext';
 
-const STORAGE_KEY = 'growguide_cart';
+const STORAGE_KEY = 'seedle_cart';
 
 const product = (id, extra = {}) => ({
   id,

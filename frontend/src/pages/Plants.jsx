@@ -88,7 +88,7 @@ export default function Plants() {
       <span className="eyebrow">Reference</span>
       <h1 className="page-title">Plant library</h1>
       <p className="page-subtitle">
-        Care details, hardiness ranges and companion planting for every plant in the GrowGuide database.
+        Care details, hardiness ranges and companion planting for every plant in the Seedle database.
       </p>
 
       <div className="filters">

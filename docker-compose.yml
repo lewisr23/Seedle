@@ -6,9 +6,9 @@ x-backend-env: &backend-env
   DB_CONNECTION: mysql
   DB_HOST: mysql
   DB_PORT: 3306
-  DB_DATABASE: growguide
-  DB_USERNAME: growguide
-  DB_PASSWORD: growguide
+  DB_DATABASE: seedle
+  DB_USERNAME: seedle
+  DB_PASSWORD: seedle
   REDIS_HOST: redis
   QUEUE_CONNECTION: redis
   CACHE_STORE: redis
@@ -29,9 +29,9 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: growguide
-      MYSQL_USER: growguide
-      MYSQL_PASSWORD: growguide
+      MYSQL_DATABASE: seedle
+      MYSQL_USER: seedle
+      MYSQL_PASSWORD: seedle
       MYSQL_ROOT_PASSWORD: root
     ports:
       # 3307 on the host: a native Windows mysqld already owns 3306. Nothing

@@ -27,7 +27,7 @@ export default class ErrorBoundary extends Component {
           <span className="empty-state__icon">🥀</span>
           <h1 className="page-title">Something went wrong</h1>
           <p className="page-subtitle" style={{ margin: '0 auto 24px' }}>
-            This part of the page failed to load. The rest of GrowGuide is still fine.
+            This part of the page failed to load. The rest of Seedle is still fine.
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
             <button className="btn" onClick={() => this.setState({ error: null })}>

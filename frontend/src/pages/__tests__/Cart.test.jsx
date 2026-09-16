@@ -32,7 +32,7 @@ const product = (id, extra = {}) => ({
 });
 
 function seedCart(lines) {
-  localStorage.setItem('growguide_cart', JSON.stringify(lines));
+  localStorage.setItem('seedle_cart', JSON.stringify(lines));
 }
 
 function renderCart() {
@@ -145,7 +145,7 @@ describe('checkout', () => {
         ],
       },
     });
-    expect(JSON.parse(localStorage.getItem('growguide_cart'))).toEqual([]);
+    expect(JSON.parse(localStorage.getItem('seedle_cart'))).toEqual([]);
   });
 
   it('shows the server message when stock ran out, and keeps the list intact', async () => {
@@ -161,7 +161,7 @@ describe('checkout', () => {
       expect(screen.getByText('Not enough stock for Product 1.')).toBeInTheDocument()
     );
     // The list must survive a failed request or the user loses it.
-    expect(JSON.parse(localStorage.getItem('growguide_cart'))).toHaveLength(1);
+    expect(JSON.parse(localStorage.getItem('seedle_cart'))).toHaveLength(1);
   });
 
   it('falls back to a generic message for a non-API failure', async () => {

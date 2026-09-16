@@ -15,6 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // The plant library and the written guides are real reference content
+        // and are meant to ship. Everything else here is local-only.
+        $this->call([
+            PlantSeeder::class,
+            GuideSeeder::class,
+        ]);
+
+        if (app()->isProduction()) {
+            $this->command?->info('Production: seeded reference data only, no demo accounts or activity.');
+
+            return;
+        }
+
         User::factory()->create([
             'name' => 'Test User',
             'username' => 'testuser',
@@ -22,10 +35,6 @@ class DatabaseSeeder extends Seeder
             'hardiness_zone' => '8',
         ]);
 
-        $this->call([
-            PlantSeeder::class,
-            GuideSeeder::class,
-            DemoDataSeeder::class,
-        ]);
+        $this->call([DemoDataSeeder::class]);
     }
 }

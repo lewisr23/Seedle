@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Seedle</string>
+    <string name="title_activity_main">Seedle</string>
+    <string name="package_name">uk.seedle.app</string>
+    <string name="custom_url_scheme">uk.seedle.app</string>
+</resources>

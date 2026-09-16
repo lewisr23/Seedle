@@ -1,0 +1,8 @@
+{
+  "appId": "uk.seedle.app",
+  "appName": "Seedle",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}

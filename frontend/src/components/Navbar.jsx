@@ -30,7 +30,7 @@ export default function Navbar() {
       <div className="navbar__inner">
         <NavLink to="/" className="navbar__brand" onClick={closeMenu}>
           <span className="mark">🌱</span>
-          GrowGuide
+          Seedle
         </NavLink>
         <div className="navbar__links">
           {LINKS.map((link) => (

@@ -1,4 +1,4 @@
-# GrowGuide
+# Seedle
 
 A gardening community and planning tool: pass on spare seeds, cuttings and tools to other growers, post updates and questions, follow other gardeners, and get help figuring out what to plant, when, and what not to plant next to it. Nothing is bought or sold, everything is swapped or given away.
 

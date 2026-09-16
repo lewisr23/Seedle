@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "lewisr23/growguide",
+    "name": "lewisr23/seedle",
     "type": "project",
-    "description": "GrowGuide API. A social marketplace and planning tool for gardeners.",
-    "keywords": ["laravel", "growguide"],
+    "description": "Seedle API. A social marketplace and planning tool for gardeners.",
+    "keywords": ["laravel", "seedle"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

@@ -5,3 +5,11 @@ CLAUDE.md
 AGENTS.md
 .DS_Store
 Thumbs.db
+docker-compose.override.yml
+.env.prod.local
+*.apk
+*.aab
+frontend/android/local.properties
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/

@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
-const TOKEN_KEY = 'growguide_token';
+const TOKEN_KEY = 'seedle_token';
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);

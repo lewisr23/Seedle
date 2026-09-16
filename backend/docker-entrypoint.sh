@@ -13,8 +13,10 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# An empty APP_KEY is a hard boot failure, not a warning.
-if ! grep -qE '^APP_KEY=.+' .env; then
+# An empty APP_KEY is a hard boot failure, not a warning. In production the key
+# arrives as a real environment variable, and key:generate refuses to run then,
+# so only generate one when nothing has supplied it.
+if [ -z "${APP_KEY:-}" ] && ! grep -qE '^APP_KEY=.+' .env; then
     echo "[entrypoint] generating APP_KEY"
     php artisan key:generate --force
 fi
