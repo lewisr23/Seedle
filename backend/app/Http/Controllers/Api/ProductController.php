@@ -17,8 +17,17 @@ class ProductController extends Controller
 {
     public function index(Request $request, ProductSearchService $search): JsonResponse
     {
-        $filters = $request->only(['q', 'category', 'sun_requirement', 'zone', 'min_price', 'max_price', 'seller_id', 'plant_id', 'sort']);
+        $filters = $request->only(['q', 'category', 'sun_requirement', 'zone', 'seller_id', 'plant_id', 'sort']);
         $filters['in_stock'] = $request->boolean('in_stock');
+
+        // "Near me" measures from the viewer's own saved point, so the client
+        // never sends coordinates and nobody can probe someone else's.
+        $viewer = $request->user();
+        if ($request->filled('radius_km') && $viewer?->latitude !== null && $viewer?->longitude !== null) {
+            $filters['origin_lat'] = $viewer->latitude;
+            $filters['origin_lon'] = $viewer->longitude;
+            $filters['radius_km'] = min((float) $request->input('radius_km'), 500);
+        }
 
         $result = $search->search(
             filters: $filters,

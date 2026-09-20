@@ -91,6 +91,16 @@ class ProductSearchService
             $filter[] = ['range' => ['stock' => ['gt' => 0]]];
         }
 
+        if ($this->hasOrigin($filters)) {
+            $filter[] = ['geo_distance' => [
+                'distance' => ((float) $filters['radius_km']).'km',
+                'seller_location' => [
+                    'lat' => (float) $filters['origin_lat'],
+                    'lon' => (float) $filters['origin_lon'],
+                ],
+            ]];
+        }
+
         $query = empty($must) && empty($filter)
             ? ['match_all' => new \stdClass]
             : ['bool' => array_filter(['must' => $must, 'filter' => $filter])];
@@ -141,10 +151,77 @@ class ProductSearchService
 
     private function esSortClause(array $filters): array
     {
+        if (($filters['sort'] ?? null) === 'distance' && $this->hasOrigin($filters)) {
+            return [[
+                '_geo_distance' => [
+                    'seller_location' => [
+                        'lat' => (float) $filters['origin_lat'],
+                        'lon' => (float) $filters['origin_lon'],
+                    ],
+                    'order' => 'asc',
+                    'unit' => 'km',
+                ],
+            ]];
+        }
+
         return match ($filters['sort'] ?? null) {
             'rating_desc' => [['rating_average' => ['order' => 'desc', 'missing' => '_last']]],
             default => empty($filters['q']) ? [['created_at' => 'desc']] : ['_score'],
         };
+    }
+
+    /** A radius search needs both a centre and a distance to be meaningful. */
+    private function hasOrigin(array $filters): bool
+    {
+        return isset($filters['origin_lat'], $filters['origin_lon'], $filters['radius_km'])
+            && is_numeric($filters['origin_lat'])
+            && is_numeric($filters['origin_lon'])
+            && (float) $filters['radius_km'] > 0;
+    }
+
+    /**
+     * Distance without PostGIS or spatial indexes: narrow with a cheap
+     * bounding box the (latitude, longitude) index can serve, then compute the
+     * real great-circle distance only for what survives.
+     */
+    private function applyDatabaseRadius($query, array $filters): void
+    {
+        $lat = (float) $filters['origin_lat'];
+        $lon = (float) $filters['origin_lon'];
+        $radius = (float) $filters['radius_km'];
+
+        $latDelta = $radius / 111.0;
+        // Lines of longitude converge towards the poles, so the box has to
+        // widen with latitude or it clips results to the east and west.
+        $lonDelta = $radius / max(cos(deg2rad($lat)) * 111.0, 0.000001);
+
+        $query->join('users as seller_loc', 'seller_loc.id', '=', 'products.seller_id')
+            ->whereNotNull('seller_loc.latitude')
+            ->whereNotNull('seller_loc.longitude')
+            ->whereBetween('seller_loc.latitude', [$lat - $latDelta, $lat + $latDelta])
+            ->whereBetween('seller_loc.longitude', [$lon - $lonDelta, $lon + $lonDelta])
+            ->select('products.*')
+            ->selectRaw($this->haversineSql().' as distance_km', [$lat, $lat, $lon])
+            // WHERE rather than HAVING on the alias: MySQL accepts HAVING
+            // without a GROUP BY, SQLite does not, so the expression is
+            // repeated through one shared builder instead.
+            ->whereRaw($this->haversineSql().' <= ?', [$lat, $lat, $lon, $radius]);
+    }
+
+    /**
+     * Haversine rather than the spherical law of cosines: it needs no
+     * clamping against floating point drift, which would otherwise mean
+     * LEAST and GREATEST, and those do not exist in SQLite.
+     *
+     * Takes three bindings, in order: origin latitude twice, then longitude.
+     */
+    private function haversineSql(): string
+    {
+        return '(2 * 6371 * asin(sqrt('
+            .' power(sin((radians(seller_loc.latitude) - radians(?)) / 2), 2)'
+            .' + cos(radians(?)) * cos(radians(seller_loc.latitude))'
+            .' * power(sin((radians(seller_loc.longitude) - radians(?)) / 2), 2)'
+            .')))';
     }
 
     private function searchDatabase(array $filters, int $page, int $perPage): array
@@ -176,6 +253,10 @@ class ProductSearchService
             $query->where('stock', '>', 0);
         }
 
+        if ($this->hasOrigin($filters)) {
+            $this->applyDatabaseRadius($query, $filters);
+        }
+
         if (! empty($filters['sun_requirement']) || ! empty($filters['zone'])) {
             $query->whereHas('plant', function ($q) use ($filters) {
                 if (! empty($filters['sun_requirement'])) {
@@ -190,8 +271,9 @@ class ProductSearchService
 
         $total = (clone $query)->count();
 
-        match ($filters['sort'] ?? null) {
-            'rating_desc' => $query->orderByDesc('reviews_avg_rating'),
+        match (true) {
+            ($filters['sort'] ?? null) === 'distance' && $this->hasOrigin($filters) => $query->orderBy('distance_km'),
+            ($filters['sort'] ?? null) === 'rating_desc' => $query->orderByDesc('reviews_avg_rating'),
             default => $query->orderByDesc('created_at'),
         };
 
@@ -233,6 +315,7 @@ class ProductSearchService
                         'reviews_count' => ['type' => 'integer'],
                         'is_active' => ['type' => 'boolean'],
                         'seller_id' => ['type' => 'integer'],
+                        'seller_location' => ['type' => 'geo_point'],
                         'created_at' => ['type' => 'date'],
                     ],
                 ],

@@ -85,6 +85,24 @@ services:
       redis:
         condition: service_healthy
 
+  # Laravel's scheduler needs a process of its own. Without this the daily
+  # garden:reminders command is defined but never runs.
+  scheduler:
+    build:
+      context: ./backend
+      args:
+        INSTALL_DEV: "false"
+    restart: unless-stopped
+    command: php artisan schedule:work
+    environment: *backend-env
+    volumes:
+      - app-storage:/var/www/html/storage/app/public
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   web:
     build:
       context: .

@@ -23,6 +23,12 @@ class ProductResource extends JsonResource
             'rating_average' => $this->reviews_avg_rating !== null ? round((float) $this->reviews_avg_rating, 1) : null,
             'reviews_count' => $this->reviews_count ?? null,
             'seller' => new UserResource($this->whenLoaded('seller')),
+            // Only present on a radius search, and only ever a distance: the
+            // seller's actual point is never exposed.
+            'distance_km' => $this->when(
+                isset($this->distance_km),
+                fn () => round((float) $this->distance_km, 1)
+            ),
             'plant' => new PlantResource($this->whenLoaded('plant')),
             'created_at' => $this->created_at,
         ];

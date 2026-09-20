@@ -91,6 +91,20 @@ describe('the photo', () => {
   });
 });
 
+describe('distance', () => {
+  it('shows how far away it is on a radius search', () => {
+    renderCard(product({ distance_km: 12.4 }));
+
+    expect(screen.getByText(/12.4 km away/)).toBeInTheDocument();
+  });
+
+  it('shows nothing when the search was not a radius search', () => {
+    renderCard();
+
+    expect(screen.queryByText(/km away/)).not.toBeInTheDocument();
+  });
+});
+
 describe('adding to the cart', () => {
   it('hands the product back to the caller', async () => {
     const onAddToCart = vi.fn();

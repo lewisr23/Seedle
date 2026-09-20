@@ -122,6 +122,13 @@ plant and guide reference data in that environment. The site starts empty of
 people and fills up with real ones. `tests/Feature/SeedingSafetyTest.php`
 enforces this, so it fails loudly if anyone removes the guard.
 
+## Scheduled work
+
+The stack runs a `scheduler` container (`php artisan schedule:work`) alongside
+the queue worker. That is what fires `garden:reminders` each morning. If you
+ever run the app without it, reminders simply never send: everything else
+carries on working. No host crontab is needed.
+
 ## 6. Check it
 
 ```bash

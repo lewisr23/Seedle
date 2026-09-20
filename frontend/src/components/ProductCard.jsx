@@ -54,6 +54,7 @@ export default function ProductCard({ product, onAddToCart }) {
         <span className="product-card__meta">
           {product.stock > 0 ? `${product.stock} available` : 'All gone'} · offered by{' '}
           {product.seller?.username}
+          {product.distance_km != null && ` · ${product.distance_km} km away`}
         </span>
         <div className="product-card__footer">
           <button

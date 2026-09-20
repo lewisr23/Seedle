@@ -91,6 +91,12 @@ class Product extends Model
             'is_active' => $this->is_active,
             'seller_id' => $this->seller_id,
             'seller_username' => $this->seller?->username,
+            // Null when the seller has not set a postcode. Elasticsearch
+            // simply will not match those on a geo_distance filter, which is
+            // the behaviour we want.
+            'seller_location' => $this->seller?->latitude !== null && $this->seller?->longitude !== null
+                ? ['lat' => (float) $this->seller->latitude, 'lon' => (float) $this->seller->longitude]
+                : null,
             'plant_id' => $this->plant_id,
             'sun_requirement' => $this->plant?->sun_requirement?->value,
             'min_zone' => $this->plant?->min_zone,

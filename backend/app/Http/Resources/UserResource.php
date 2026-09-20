@@ -18,6 +18,16 @@ class UserResource extends JsonResource
             'bio' => $this->bio,
             'location' => $this->location,
             'hardiness_zone' => $this->hardiness_zone,
+            // Only ever visible to the account's owner. Other people see a
+            // distance on a listing, never anybody's postcode or point.
+            'postcode' => $this->when(
+                $request->user()?->id === $this->id,
+                fn () => $this->postcode
+            ),
+            'latitude' => $this->when(
+                $request->user()?->id === $this->id,
+                fn () => $this->latitude
+            ),
             'avatar_path' => $this->avatar_path,
             'followers_count' => $this->whenCounted('followers'),
             'following_count' => $this->whenCounted('following'),

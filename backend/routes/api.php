@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SavedItemController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WantController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -36,6 +37,8 @@ Route::get('/posts', [PostController::class, 'index']);
 Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/posts/{post}/comments', [CommentController::class, 'index']);
 
+Route::get('/wants', [WantController::class, 'index']);
+
 Route::get('/guides', [GuideController::class, 'index']);
 Route::get('/guides/{guide}', [GuideController::class, 'show']);
 
@@ -52,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead']);
 
+    Route::patch('/me', [UserController::class, 'update']);
     Route::get('/suggested-gardeners', [UserController::class, 'suggestions']);
     Route::post('/users/{user}/follow', [UserController::class, 'follow']);
     Route::delete('/users/{user}/follow', [UserController::class, 'unfollow']);
@@ -77,6 +81,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/products/{product}/save', [SavedItemController::class, 'unsaveProduct']);
     Route::post('/plants/{plant}/save', [SavedItemController::class, 'savePlant']);
     Route::delete('/plants/{plant}/save', [SavedItemController::class, 'unsavePlant']);
+
+    Route::post('/wants', [WantController::class, 'store']);
+    Route::patch('/wants/{want}/close', [WantController::class, 'close']);
+    Route::delete('/wants/{want}', [WantController::class, 'destroy']);
 
     Route::get('/my-listings', [ProductController::class, 'mine']);
     Route::post('/product-images', [ProductImageController::class, 'store']);

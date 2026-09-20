@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Notifications\NewFollower;
+use App\Services\Location\PostcodeGeocoder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,6 +19,30 @@ class UserController extends Controller
         $user->loadCount('followers', 'following');
 
         return new UserResource($user);
+    }
+
+    /**
+     * Update the signed-in user's own profile. A postcode is geocoded here
+     * rather than at read time so the lookup happens once, and a failed
+     * lookup clears the coordinates instead of leaving stale ones behind.
+     */
+    public function update(UpdateProfileRequest $request, PostcodeGeocoder $geocoder): UserResource
+    {
+        $user = $request->user();
+        $data = $request->validated();
+
+        if (array_key_exists('postcode', $data)) {
+            $postcode = $data['postcode'] === null ? null : $geocoder->normalise($data['postcode']);
+            $point = ($postcode === null || $postcode === '') ? null : $geocoder->lookup($postcode);
+
+            $data['postcode'] = $postcode ?: null;
+            $data['latitude'] = $point['latitude'] ?? null;
+            $data['longitude'] = $point['longitude'] ?? null;
+        }
+
+        $user->fill($data)->save();
+
+        return new UserResource($user->fresh());
     }
 
     public function follow(Request $request, User $user): JsonResponse

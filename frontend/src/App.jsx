@@ -11,6 +11,8 @@ import Login from './pages/Login';
 import Messages from './pages/Messages';
 import Register from './pages/Register';
 import Saved from './pages/Saved';
+import Settings from './pages/Settings';
+import Wanted from './pages/Wanted';
 import Conversation from './pages/Conversation';
 import Feed from './pages/Feed';
 import PostDetail from './pages/PostDetail';
@@ -41,6 +43,7 @@ export default function App() {
           <Route path="/guides/:slug" element={<GuideDetail />} />
           <Route path="/plants" element={<Plants />} />
           <Route path="/plants/:id" element={<PlantDetail />} />
+          <Route path="/wanted" element={<Wanted />} />
           <Route path="/u/:username" element={<Profile />} />
 
           <Route
@@ -48,6 +51,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Orders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             }
           />

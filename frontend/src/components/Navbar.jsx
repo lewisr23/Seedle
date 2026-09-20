@@ -8,6 +8,7 @@ import NotificationBell from './NotificationBell';
 
 const LINKS = [
   { to: '/', label: 'Swap shelf', end: true },
+  { to: '/wanted', label: 'Wanted' },
   { to: '/plants', label: 'Plants' },
   { to: '/guides', label: 'Guides' },
   { to: '/garden', label: 'Garden Planner' },
@@ -122,6 +123,9 @@ export default function Navbar() {
               </NavLink>
               <NavLink to="/saved" className="navbar__mobile-link" onClick={closeMenu}>
                 Saved
+              </NavLink>
+              <NavLink to="/settings" className="navbar__mobile-link" onClick={closeMenu}>
+                Settings
               </NavLink>
               <NavLink to="/messages" className="navbar__mobile-link" onClick={closeMenu}>
                 Messages

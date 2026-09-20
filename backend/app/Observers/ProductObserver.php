@@ -3,7 +3,9 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use App\Models\Want;
 use App\Notifications\BackInStock;
+use App\Notifications\WantMatched;
 use App\Services\Search\ProductSearchService;
 
 class ProductObserver
@@ -31,6 +33,25 @@ class ProductObserver
         }
 
         $product->savers()->each(fn ($user) => $user->notify(new BackInStock($product)));
+    }
+
+    /**
+     * A new listing can answer an open request. Matched on the plant rather
+     * than the title, so "toms" and "Tomato" still find each other, and only
+     * when the listing is actually available to claim.
+     */
+    public function created(Product $product): void
+    {
+        if ($product->plant_id === null || ! $product->is_active || $product->stock < 1) {
+            return;
+        }
+
+        Want::query()
+            ->open()
+            ->where('plant_id', $product->plant_id)
+            ->where('user_id', '!=', $product->seller_id)
+            ->with('user', 'plant')
+            ->each(fn (Want $want) => $want->user->notify(new WantMatched($want, $product)));
     }
 
     public function deleted(Product $product): void

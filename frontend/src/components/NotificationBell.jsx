@@ -9,6 +9,8 @@ const ICONS = {
   new_comment: '💬',
   new_message: '✉️',
   back_in_stock: '♥',
+  want_matched: '🔎',
+  garden_reminder: '🗓️',
   order_status: '📦',
 };
 

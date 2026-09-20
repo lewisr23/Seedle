@@ -22,6 +22,7 @@ const SUN_OPTIONS = [
 const SORT_OPTIONS = [
   { value: '', label: 'Newest first' },
   { value: 'rating_desc', label: 'Top rated' },
+  { value: 'distance', label: 'Nearest first' },
 ];
 
 const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.filter((c) => c.value).map((c) => [c.value, c.label]));
@@ -33,6 +34,7 @@ const DEFAULT_FILTERS = {
   zone: '',
   inStock: false,
   sort: '',
+  radiusKm: '',
 };
 
 export default function Home() {
@@ -76,6 +78,7 @@ export default function Home() {
           zone: filters.zone || undefined,
           in_stock: filters.inStock ? 1 : undefined,
           sort: filters.sort || undefined,
+          radius_km: filters.radiusKm || undefined,
           page,
         },
       })
@@ -184,6 +187,17 @@ export default function Home() {
                 {c.label}
               </option>
             ))}
+          </select>
+          <select
+            value={filters.radiusKm}
+            onChange={(e) => setFilter('radiusKm')(e.target.value)}
+            aria-label="Distance"
+          >
+            <option value="">Anywhere</option>
+            <option value="5">Within 5 km</option>
+            <option value="15">Within 15 km</option>
+            <option value="30">Within 30 km</option>
+            <option value="75">Within 75 km</option>
           </select>
           <select value={filters.sort} onChange={(e) => setFilter('sort')(e.target.value)}>
             {SORT_OPTIONS.map((s) => (

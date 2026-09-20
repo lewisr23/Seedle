@@ -10,6 +10,9 @@ A gardening community and planning tool: pass on spare seeds, cuttings and tools
 - **"What can I plant right now?"**: recommendations filtered by hardiness zone and the current month
 - **Guides**: 15 written guides across getting-started, soil, watering, pests, seasonal jobs, tools and composting, filterable by category and linked to specific plants where relevant
 - **Social feed**: post updates, questions and tips, follow other gardeners, like and comment, pin your own posts to the top of your profile, with suggested gardeners to follow
+- **Local discovery**: set a postcode and the swap shelf can filter to what is within collecting distance, sorted nearest first, with a distance on each card. The stored point is rounded to roughly a kilometre and only ever surfaces as a distance, so nobody's address is exposed
+- **Wanted**: post what you are looking for rather than only browsing what exists, and get told when somebody lists that plant
+- **Garden reminders**: a daily scheduled command turns the plant library's calendar into nudges, sow a saved plant when its window opens, and harvest a bed entry once `days_to_maturity` has elapsed. Idempotent by a unique row per reminder, so running it twice tells nobody twice
 - **Listing photos**: growers upload images when offering something; they show on cards and the product page, with the category emoji as a fallback for listings without one
 - **Saved items**: heart any listing or plant to keep it on a saved page; saving something that has run out gets you a notification when the grower puts more up (only on the genuine 0 → in-stock transition, and not while the listing is paused)
 - **Messaging**: you can ask a grower about anything they are offering; one thread per person and listing so asking twice continues the conversation rather than forking it, with unread counts in the navbar, the other party notified through the queue, and an open thread polling so a reply appears without a refresh
@@ -23,7 +26,7 @@ A gardening community and planning tool: pass on spare seeds, cuttings and tools
 - **Backend**: Laravel 13 / PHP 8.4. REST API, Sanctum auth, backed enums, service classes for search/checkout/garden logic
 - **Frontend**: React + Vite, hand-written SCSS (no component library), Vitest + React Testing Library
 - **Data**: MySQL (SQLite for local dev/tests), Elasticsearch for product search, Redis + queue workers for async jobs
-- **Infra**: Docker Compose (7 services), GitHub Actions CI (PHPUnit + Pint, then frontend lint, tests and build)
+- **Infra**: Docker Compose (8 services), GitHub Actions CI (PHPUnit + Pint, then frontend lint, tests and build)
 
 ## Architecture
 
@@ -130,7 +133,7 @@ cd backend
 php artisan test
 ```
 
-95 tests covering auth, claiming (including insufficient-stock and multi-seller-split cases), search filters and sorting, reviews and the verified-claimant rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases), and listing images (type and size validation, generated filenames, unauthenticated serving, and refusing to serve anything outside the upload directory).
+129 tests covering auth, claiming (including insufficient-stock and multi-seller-split cases), search filters and sorting, reviews and the verified-claimant rule, plant browsing and companion data, guides, garden beds and conflict detection, the social feed/follow graph, pinned posts, seller listings, the notification pipeline, messaging (thread reuse, participant-only access, read receipts and unread counts), saved items (idempotent saving, products and plants kept apart in one polymorphic table, and the restock notification's edge cases), listing images (type and size validation, generated filenames, unauthenticated serving, and refusing to serve anything outside the upload directory), local discovery (geocoding, graceful lookup failure, radius and distance maths, and exclusion of gardeners with no location), wanted requests and their match notifications, and the reminder scheduler's idempotency.
 
 To run them inside the container instead, pass the test environment as real environment variables:
 
@@ -147,7 +150,7 @@ cd frontend
 npm test
 ```
 
-95 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the swap list context (quantity merging, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the claim flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, and `ProductCard` (sold-out handling, ratings appearing only once reviewed, its save toggle, and photo-versus-emoji fallback).
+105 tests across the pieces that hold real logic rather than markup: the API client (bearer token, query-param building, Laravel 422 field errors, empty and non-JSON bodies), the swap list context (quantity merging, localStorage persistence and recovery from corrupt storage), the auth context (session restore, discarding a token the server rejects, clearing local state even when `/logout` fails), the claim flow end to end against a mocked API, `timeAgo`, the `Stars` component in both display and input modes, the "message seller" composer (own-listing and signed-out cases included), the conversation thread including its polling, driven with fake timers so the suite doesn't wait out a real interval, the saved-items context with its optimistic heart toggle and rollback on failure, `ProductCard` (sold-out handling, ratings appearing only once reviewed, its save toggle, photo-versus-emoji fallback and the distance badge), and the wanted page.
 
 Writing them turned up a real bug: clearing the cart's quantity field deleted the line, because `Number('')` is `0` and `updateQuantity` treats `0` as "remove", so selecting the number and pressing delete, the ordinary way to retype it, silently emptied your basket. The field now keeps a draft string while you edit. Two tests cover it.
 
