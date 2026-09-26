@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: seedle-api
+
+  datasource:
+    # Local dev role, created by the one-off psql command in PORTING.md. These
+    # are throwaway local credentials, not secrets.
+    url: jdbc:postgresql://127.0.0.1:5432/seedle
+    username: ${SEEDLE_DB_USER:seedle}
+    password: ${SEEDLE_DB_PASSWORD:seedle}
+
+  jpa:
+    # Flyway owns the schema. Hibernate is only allowed to check that the
+    # entities and the tables agree, never to change anything.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  # The Laravel API owns :8000. Running on a different port means both backends
+  # can be up at once, which is what makes endpoint-by-endpoint comparison
+  # possible during the port.
+  port: 8081
+
+seedle:
+  cors:
+    # The Vite dev server, pinned to 5180 so it cannot race another project.
+    allowed-origins: http://localhost:5180,http://127.0.0.1:5180
+  jwt:
+    issuer: seedle
+    # Sanctum tokens did not expire. Matching that for now so the frontend's
+    # stored token keeps behaving the same way; logout revokes via jti.
+    ttl: 30d
+
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: info
