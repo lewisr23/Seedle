@@ -1,8 +1,12 @@
+# Pinned so the Compose project name does not follow the folder name. Without
+# this, renaming the directory orphans the mysql-data and es-data volumes.
+name: seedle
+
 # Shared by the two containers that boot the Laravel app. Keeping it in one
 # place stops the web tier and the worker drifting onto different databases.
 x-backend-env: &backend-env
   APP_URL: http://localhost:8000
-  FRONTEND_URL: http://localhost:5173
+  FRONTEND_URL: http://localhost:5180
   DB_CONNECTION: mysql
   DB_HOST: mysql
   DB_PORT: 3306
@@ -135,7 +139,7 @@ services:
     build: ./frontend
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "5180:5180"
     volumes:
       - ./frontend:/app
       - /app/node_modules

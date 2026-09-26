@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { MONTHS, TYPE_ICONS } from '../utils/plants';
 
 const TYPES = [
   { value: '', label: 'All plants' },
@@ -26,20 +27,6 @@ const WATER_OPTIONS = [
   { value: 'medium', label: 'Medium water' },
   { value: 'high', label: 'High water' },
 ];
-
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-const TYPE_ICONS = {
-  vegetable: '🥕',
-  fruit: '🍓',
-  herb: '🌿',
-  flower: '🌼',
-  tree: '🌳',
-  shrub: '🪴',
-};
 
 export default function Plants() {
   const { user } = useAuth();

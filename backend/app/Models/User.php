@@ -46,6 +46,11 @@ class User extends Authenticatable
         return $this->hasMany(GardenBed::class);
     }
 
+    public function harvests(): HasMany
+    {
+        return $this->hasMany(Harvest::class);
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'seller_id');

@@ -5,11 +5,13 @@ import { useCart } from '../context/CartContext';
 import Avatar from './Avatar';
 import MessagesLink from './MessagesLink';
 import NotificationBell from './NotificationBell';
+import Icon from './Icon';
 
 const LINKS = [
   { to: '/', label: 'Swap shelf', end: true },
   { to: '/wanted', label: 'Wanted' },
   { to: '/plants', label: 'Plants' },
+  { to: '/calendar', label: 'Calendar' },
   { to: '/guides', label: 'Guides' },
   { to: '/garden', label: 'Garden Planner' },
   { to: '/feed', label: 'Community' },
@@ -51,13 +53,13 @@ export default function Navbar() {
           )}
         </div>
         <div className="navbar__right">
-          <NavLink to="/cart" className="navbar__cart">
-            🛒
+          <NavLink to="/cart" className="navbar__cart" aria-label="Basket">
+            <Icon name="cart" />
             {totalItems > 0 && <span className="navbar__cart-badge">{totalItems}</span>}
           </NavLink>
           {user && (
             <NavLink to="/saved" className="navbar__cart" aria-label="Saved items">
-              ♡
+              <Icon name="heart" />
             </NavLink>
           )}
           {user && <MessagesLink />}
@@ -92,7 +94,7 @@ export default function Navbar() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((v) => !v)}
           >
-            {menuOpen ? '✕' : '☰'}
+            <Icon name={menuOpen ? "close" : "menu"} />
           </button>
         </div>
       </div>
@@ -120,6 +122,9 @@ export default function Navbar() {
             <>
               <NavLink to={`/u/${user.username}`} className="navbar__mobile-link" onClick={closeMenu}>
                 <Avatar name={user.username} size={22} /> {user.username}
+              </NavLink>
+              <NavLink to="/harvests" className="navbar__mobile-link" onClick={closeMenu}>
+                Harvest log
               </NavLink>
               <NavLink to="/saved" className="navbar__mobile-link" onClick={closeMenu}>
                 Saved

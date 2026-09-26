@@ -6,7 +6,9 @@ A gardening community and planning tool: pass on spare seeds, cuttings and tools
 
 - **Swap shelf**: search what people are offering by text, category, sun requirement, hardiness zone and availability, with faceted counts and a top-rated sort, backed by Elasticsearch
 - **Plant library**: care details, hardiness ranges, planting calendar and companion relationships for every plant, filterable by type, sun, water, zone and planting month
-- **Garden planner**: create beds, add plants, and get warned when you add something that fights with what's already there (real companion-planting data: tomatoes next to potatoes gets flagged, tomatoes next to basil doesn't)
+- **Garden planner**: create beds at their real size, then lay them out on a plot drawn to scale. Each plant is drawn with the footprint its spacing actually needs, and you drag it where you want it. Three things get flagged as you move things around: a plant too close to the edge to reach full size, two plants crowding each other, and poor companions sat close together (real companion-planting data: tomatoes next to potatoes gets flagged, tomatoes next to basil doesn't)
+- **Harvest log**: record what you pick from any plant on the plan, as a weight, a count or a trug, with a date and a note. It totals by plant and by year, so you can see which bed actually earned its space
+- **Sowing calendar**: a month by month grid of when to sow each plant and roughly when to expect to be picking it, filtered to your hardiness zone, with the current month highlighted and a toggle for showing only what you are already growing or have saved
 - **"What can I plant right now?"**: recommendations filtered by hardiness zone and the current month
 - **Guides**: 15 written guides across getting-started, soil, watering, pests, seasonal jobs, tools and composting, filterable by category and linked to specific plants where relevant
 - **Social feed**: post updates, questions and tips, follow other gardeners, like and comment, pin your own posts to the top of your profile, with suggested gardeners to follow
@@ -89,7 +91,7 @@ cp .env.example .env
 npm run dev
 ```
 
-Open http://localhost:5173. The swap shelf, garden planner and social feed all work immediately. Elasticsearch-backed search falls back to a MySQL/SQLite query if no cluster is running (a small banner on the swap shelf says so). Everything still works, just without facet counts.
+Open http://localhost:5180. The swap shelf, garden planner and social feed all work immediately. Elasticsearch-backed search falls back to a MySQL/SQLite query if no cluster is running (a small banner on the swap shelf says so). Everything still works, just without facet counts.
 
 To get real search, either run Elasticsearch separately and point `ELASTICSEARCH_HOST` at it, or use Docker (below).
 
@@ -105,7 +107,7 @@ php artisan queue:work
 docker compose up --build
 ```
 
-This brings up MySQL (published on :3307, since a locally installed MySQL usually already owns :3306), Redis, Elasticsearch, the Laravel API (behind nginx on :8000), a dedicated queue worker, and the frontend dev server on :5173. Then, one-time setup inside the app container:
+This brings up MySQL (published on :3307, since a locally installed MySQL usually already owns :3306), Redis, Elasticsearch, the Laravel API (behind nginx on :8000), a dedicated queue worker, and the frontend dev server on :5180. Then, one-time setup inside the app container:
 
 ```bash
 docker compose exec app php artisan migrate --seed

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { timeAgo } from '../utils/time';
+import Icon from './Icon';
 
 const ICONS = {
   new_sale: '💰',
@@ -71,7 +72,7 @@ export default function NotificationBell() {
   return (
     <div className="notif" ref={panelRef}>
       <button className="notif__button" onClick={toggle} aria-label="Notifications">
-        🔔
+        <Icon name="bell" />
         {unread > 0 && <span className="notif__badge">{unread > 9 ? '9+' : unread}</span>}
       </button>
 

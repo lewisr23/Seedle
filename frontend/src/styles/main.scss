@@ -112,7 +112,11 @@ h4 {
 }
 
 .page {
-  padding: 36px 0 80px;
+  // Longhands on purpose. This is usually set alongside .container, and the
+  // padding shorthand would reset .container's horizontal gutter to zero,
+  // leaving content flush against the screen edge on narrow viewports.
+  padding-top: 36px;
+  padding-bottom: 80px;
   min-height: calc(100vh - 260px);
 }
 
@@ -1120,6 +1124,7 @@ h1.page-title {
     border-radius: var(--radius-pill);
     background: none;
     border: none;
+    color: var(--ink-700);
     font-size: 17px;
 
     &:hover {
@@ -1644,5 +1649,604 @@ h1.page-title {
       height: 30px;
       font-size: 15px;
     }
+  }
+}
+
+/* ---------- Plot planner ---------- */
+.planner-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.plot-size-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.plot-empty {
+  padding: 22px;
+  max-width: 540px;
+
+  p {
+    font-size: 14px;
+    color: var(--ink-500);
+    margin: 6px 0 14px;
+  }
+}
+
+.plot-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.plot-toolbar__picker {
+  display: flex;
+  gap: 8px;
+
+  select {
+    min-width: 200px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1.5px solid var(--sand-dark);
+    background: var(--white);
+    font-family: inherit;
+    font-size: 14px;
+  }
+}
+
+.plot-toolbar__hint {
+  font-size: 13px;
+  color: var(--ink-500);
+
+  &.is-armed {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: var(--green-700);
+  }
+}
+
+.plot {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--sand-dark);
+  box-shadow: var(--shadow-xs);
+}
+
+.plot__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Without this a drag on a touch screen scrolls the page instead of
+     moving the plant. */
+  touch-action: none;
+  user-select: none;
+
+  &--placing {
+    cursor: crosshair;
+  }
+}
+
+.plot__soil {
+  fill: #e9dcc6;
+}
+
+.plot__grid {
+  stroke: rgba(122, 104, 74, 0.22);
+  stroke-width: 1;
+
+  &--metre {
+    stroke: rgba(122, 104, 74, 0.5);
+    stroke-width: 1.5;
+  }
+}
+
+.plot__plant {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  .plot__footprint {
+    fill: var(--green-300);
+    fill-opacity: 0.55;
+    stroke: var(--green-700);
+    stroke-width: 1.5;
+  }
+
+  &--herb .plot__footprint {
+    fill: #a8ccb4;
+  }
+
+  &--fruit .plot__footprint {
+    fill: #e9a7a0;
+    stroke: var(--red-600);
+  }
+
+  &--flower .plot__footprint {
+    fill: #e8c98a;
+    stroke: var(--amber-600);
+  }
+
+  &.is-selected .plot__footprint {
+    stroke-width: 3;
+    stroke: var(--green-950);
+  }
+
+  &.has-issue .plot__footprint {
+    stroke: var(--red-500);
+    stroke-dasharray: 6 4;
+    stroke-width: 2.5;
+  }
+}
+
+.plot__icon {
+  pointer-events: none;
+}
+
+.plot__label {
+  pointer-events: none;
+  fill: var(--ink-900);
+  font-weight: 700;
+  font-family: var(--font-body);
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.85);
+  stroke-width: 3;
+}
+
+.plot__link {
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+
+  &--crowding {
+    stroke: var(--amber-600);
+  }
+
+  &--companion {
+    stroke: var(--red-500);
+  }
+}
+
+.plot__ruler {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-500);
+  pointer-events: none;
+
+  &--x {
+    left: 8px;
+    right: 8px;
+    bottom: 4px;
+  }
+
+  &--y {
+    top: 6px;
+    bottom: 18px;
+    left: 6px;
+    flex-direction: column;
+  }
+}
+
+.plot-issues {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  display: grid;
+  gap: 8px;
+  max-width: 900px;
+}
+
+.plot-issues__item {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  background: var(--amber-100);
+  color: var(--ink-700);
+  border-left: 4px solid var(--amber-500);
+
+  strong {
+    color: var(--amber-600);
+  }
+
+  &--companion {
+    background: var(--red-100);
+    border-left-color: var(--red-500);
+
+    strong {
+      color: var(--red-600);
+    }
+  }
+}
+
+.plot-selected {
+  padding: 18px;
+  max-width: 900px;
+}
+
+.plot-selected__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+
+  label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-700);
+  }
+
+  input {
+    padding: 8px 11px;
+    border: 1.5px solid var(--sand-dark);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--white);
+  }
+}
+
+.plot-selected__ready {
+  font-size: 13px;
+  color: var(--green-700);
+  font-weight: 600;
+}
+
+/* ---------- Harvest log ---------- */
+.harvest-form {
+  margin-top: 16px;
+  border-top: 1px solid var(--sand-dark);
+  padding-top: 14px;
+}
+
+.harvest-form__title {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  margin: 0;
+}
+
+.harvest-form__fields {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+  max-width: 420px;
+}
+
+.harvest-form__quantity {
+  display: flex;
+  gap: 8px;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  select {
+    width: 110px;
+  }
+}
+
+.harvest-form__empty {
+  font-size: 13px;
+  color: var(--ink-500);
+  margin: 10px 0 0;
+}
+
+.harvest-form__list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--sand);
+    font-size: 13.5px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    button {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--ink-300);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+
+      &:hover {
+        color: var(--red-500);
+      }
+    }
+  }
+}
+
+.harvest-form__date {
+  color: var(--ink-500);
+  min-width: 82px;
+}
+
+.harvest-form__amount {
+  font-weight: 700;
+  color: var(--green-700);
+}
+
+.harvest-form__notes {
+  color: var(--ink-500);
+}
+
+.harvest-years {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.harvest-totals {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  margin-top: 14px;
+}
+
+.harvest-total {
+  background: var(--white);
+  border: 1px solid var(--sand-dark);
+  border-radius: var(--radius-md);
+  padding: 14px;
+
+  strong {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 16px;
+    color: var(--ink-900);
+  }
+}
+
+.harvest-total__figure {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green-700);
+  margin: 4px 0 2px;
+}
+
+.harvest-total__times {
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+.harvest-log {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+
+  li {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--sand);
+    font-size: 14px;
+  }
+}
+
+.harvest-log__date {
+  color: var(--ink-500);
+  min-width: 90px;
+  font-size: 13px;
+}
+
+.harvest-log__plant {
+  font-weight: 700;
+  min-width: 150px;
+}
+
+.harvest-log__amount {
+  color: var(--green-700);
+  font-weight: 700;
+}
+
+.harvest-log__bed {
+  font-size: 12.5px;
+}
+
+.harvest-log__notes {
+  color: var(--ink-500);
+  font-size: 13px;
+}
+
+/* ---------- Sowing calendar ---------- */
+.calendar-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 18px 0 8px;
+
+  .field input {
+    width: 130px;
+  }
+}
+
+.calendar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-700);
+  padding-bottom: 10px;
+
+  input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--green-600);
+  }
+}
+
+.calendar-key {
+  display: flex;
+  gap: 14px;
+  padding-bottom: 10px;
+  margin-left: auto;
+}
+
+.calendar-key__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-500);
+}
+
+.calendar-bar {
+  display: block;
+  height: 9px;
+  border-radius: var(--radius-pill);
+  min-width: 18px;
+
+  &--sow {
+    background: var(--green-500);
+  }
+
+  &--harvest {
+    background: var(--terracotta-500);
+  }
+}
+
+.calendar-key__item .calendar-bar {
+  width: 22px;
+}
+
+.calendar-scroll {
+  overflow-x: auto;
+  margin-top: 8px;
+  border: 1px solid var(--sand-dark);
+  border-radius: var(--radius-md);
+  background: var(--white);
+}
+
+.calendar {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+
+  th,
+  td {
+    text-align: center;
+    padding: 0;
+  }
+
+  thead th {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-500);
+    padding: 10px 0;
+    border-bottom: 1.5px solid var(--sand-dark);
+  }
+
+  tbody tr:nth-child(even) {
+    background: var(--green-50);
+  }
+}
+
+.calendar__plant-head {
+  text-align: left !important;
+  padding-left: 14px !important;
+  min-width: 190px;
+}
+
+.calendar__plant {
+  text-align: left;
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 9px 14px !important;
+  white-space: nowrap;
+
+  a {
+    color: var(--ink-900);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--green-700);
+      text-decoration: underline;
+    }
+  }
+}
+
+.calendar__tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--green-700);
+  color: var(--white);
+
+  &--saved {
+    background: var(--sand-dark);
+    color: var(--ink-700);
+  }
+}
+
+.calendar__month.is-now {
+  color: var(--green-700);
+  background: var(--green-100);
+}
+
+.calendar__cell {
+  padding: 6px 4px !important;
+  min-width: 34px;
+  border-left: 1px solid var(--sand);
+  vertical-align: middle;
+
+  &.is-now {
+    background: rgba(79, 143, 100, 0.13);
+  }
+
+  .calendar-bar + .calendar-bar {
+    margin-top: 3px;
+  }
+}
+
+@media (max-width: 720px) {
+  .calendar-key {
+    margin-left: 0;
+  }
+
+  .plot-size-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .harvest-log__plant {
+    min-width: 0;
   }
 }

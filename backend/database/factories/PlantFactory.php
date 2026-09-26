@@ -30,6 +30,7 @@ class PlantFactory extends Factory
             'min_zone' => $minZone,
             'max_zone' => $minZone + fake()->numberBetween(2, 6),
             'days_to_maturity' => fake()->numberBetween(30, 120),
+            'spacing_cm' => fake()->numberBetween(5, 90),
             'planting_months' => fake()->randomElements(range(1, 12), fake()->numberBetween(1, 3)),
             'description' => fake()->sentence(15),
         ];

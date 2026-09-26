@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'name', 'hardiness_zone'])]
+#[Fillable(['user_id', 'name', 'hardiness_zone', 'width_cm', 'length_cm'])]
 class GardenBed extends Model
 {
     /** @use HasFactory<GardenBedFactory> */
@@ -23,5 +23,13 @@ class GardenBed extends Model
     public function entries(): HasMany
     {
         return $this->hasMany(GardenBedPlant::class);
+    }
+
+    /**
+     * Whether this bed has been given a size, and so can be drawn to scale.
+     */
+    public function hasPlot(): bool
+    {
+        return $this->width_cm !== null && $this->length_cm !== null;
     }
 }

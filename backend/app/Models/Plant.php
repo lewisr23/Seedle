@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name', 'scientific_name', 'slug', 'type', 'sun_requirement', 'water_needs',
-    'soil_type', 'min_zone', 'max_zone', 'days_to_maturity', 'planting_months', 'description',
+    'soil_type', 'min_zone', 'max_zone', 'days_to_maturity', 'spacing_cm', 'planting_months', 'description',
 ])]
 class Plant extends Model
 {
@@ -30,6 +30,7 @@ class Plant extends Model
             'planting_months' => 'array',
             'min_zone' => 'integer',
             'max_zone' => 'integer',
+            'spacing_cm' => 'integer',
         ];
     }
 

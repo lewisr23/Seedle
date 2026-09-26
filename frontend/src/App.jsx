@@ -20,6 +20,8 @@ import Sell from './pages/Sell';
 import Dashboard from './pages/Dashboard';
 import GardenPlanner from './pages/GardenPlanner';
 import GardenBedDetail from './pages/GardenBedDetail';
+import Calendar from './pages/Calendar';
+import Harvests from './pages/Harvests';
 import Profile from './pages/Profile';
 import Guides from './pages/Guides';
 import GuideDetail from './pages/GuideDetail';
@@ -42,6 +44,7 @@ export default function App() {
           <Route path="/guides" element={<Guides />} />
           <Route path="/guides/:slug" element={<GuideDetail />} />
           <Route path="/plants" element={<Plants />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/plants/:id" element={<PlantDetail />} />
           <Route path="/wanted" element={<Wanted />} />
           <Route path="/u/:username" element={<Profile />} />
@@ -115,6 +118,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <GardenBedDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/harvests"
+            element={
+              <ProtectedRoute>
+                <Harvests />
               </ProtectedRoute>
             }
           />

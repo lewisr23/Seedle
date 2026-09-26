@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { api } from '../api/client';
+import Icon from './Icon';
 
 /**
  * Navbar entry for the inbox, with an unread badge. Polls on the same cadence
@@ -26,7 +27,7 @@ export default function MessagesLink() {
 
   return (
     <NavLink to="/messages" className="navbar__cart" aria-label="Messages">
-      ✉️
+      <Icon name="envelope" />
       {unread > 0 && <span className="navbar__cart-badge">{unread}</span>}
     </NavLink>
   );

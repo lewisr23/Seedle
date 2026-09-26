@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\GardenBedController;
 use App\Http\Controllers\Api\GuideController;
+use App\Http\Controllers\Api\HarvestController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PlantController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProductImageController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SavedItemController;
+use App\Http\Controllers\Api\SowingCalendarController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WantController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +40,8 @@ Route::get('/posts/{post}', [PostController::class, 'show']);
 Route::get('/posts/{post}/comments', [CommentController::class, 'index']);
 
 Route::get('/wants', [WantController::class, 'index']);
+
+Route::get('/sowing-calendar', [SowingCalendarController::class, 'index']);
 
 Route::get('/guides', [GuideController::class, 'index']);
 Route::get('/guides/{guide}', [GuideController::class, 'show']);
@@ -105,5 +109,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/garden-beds/{gardenBed}', [GardenBedController::class, 'update']);
     Route::delete('/garden-beds/{gardenBed}', [GardenBedController::class, 'destroy']);
     Route::post('/garden-beds/{gardenBed}/plants', [GardenBedController::class, 'addPlant']);
+    Route::patch('/garden-beds/{gardenBed}/plants/{entry}', [GardenBedController::class, 'updatePlant']);
     Route::delete('/garden-beds/{gardenBed}/plants/{entry}', [GardenBedController::class, 'removePlant']);
+
+    Route::get('/harvests', [HarvestController::class, 'index']);
+    Route::get('/harvests/summary', [HarvestController::class, 'summary']);
+    Route::post('/garden-beds/{gardenBed}/plants/{entry}/harvests', [HarvestController::class, 'store']);
+    Route::delete('/harvests/{harvest}', [HarvestController::class, 'destroy']);
 });

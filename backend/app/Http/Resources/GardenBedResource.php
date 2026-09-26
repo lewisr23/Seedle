@@ -15,12 +15,10 @@ class GardenBedResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'hardiness_zone' => $this->hardiness_zone,
-            'plants' => $this->whenLoaded('entries', fn () => $this->entries->map(fn ($entry) => [
-                'entry_id' => $entry->id,
-                'plant' => new PlantResource($entry->plant),
-                'planted_at' => $entry->planted_at,
-                'notes' => $entry->notes,
-            ])),
+            'width_cm' => $this->width_cm,
+            'length_cm' => $this->length_cm,
+            'has_plot' => $this->hasPlot(),
+            'plants' => GardenBedPlantResource::collection($this->whenLoaded('entries')),
             'created_at' => $this->created_at,
         ];
     }

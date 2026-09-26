@@ -23,6 +23,7 @@ class PlantResource extends JsonResource
             'min_zone' => $this->min_zone,
             'max_zone' => $this->max_zone,
             'days_to_maturity' => $this->days_to_maturity,
+            'spacing_cm' => $this->spacing_cm,
             'planting_months' => $this->planting_months,
             'description' => $this->description,
             'good_companions' => PlantResource::collection($this->whenLoaded('goodCompanions')),
