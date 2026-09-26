@@ -2,6 +2,9 @@
   "appId": "uk.seedle.app",
   "appName": "Seedle",
   "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  },
   "android": {
     "allowMixedContent": false
   }
